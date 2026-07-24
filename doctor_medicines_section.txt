@@ -1,0 +1,70 @@
+    # PAGE: MEDICINES (Doctor - View Only)
+    elif page == "medicines":
+        page_header("💊 Medicines", "Browse pharmacy inventory (Read-only)")
+
+        medicines = db.fetch_all_medicines()
+
+        # Search and filter
+        col_search1, col_search2 = st.columns([2, 1])
+        with col_search1:
+            search_term = st.text_input("🔍 Search medicines", placeholder="Search by name...")
+        with col_search2:
+            category_filter = st.selectbox("Category", ["All"] + list(set(m.get("category", "General") for m in medicines)))
+
+        # Filter medicines
+        filtered_meds = medicines
+        if search_term:
+            filtered_meds = [m for m in filtered_meds if search_term.lower() in m.get("name", "").lower()]
+        if category_filter != "All":
+            filtered_meds = [m for m in filtered_meds if m.get("category") == category_filter]
+
+        st.info("👨‍⚕️ Doctors can only view medicines. Contact admin to add/edit medicines.")
+
+        if not filtered_meds:
+            st.warning("No medicines found.")
+        else:
+            st.markdown(f"### 📋 Medicines List ({len(filtered_meds)} found)")
+
+            # Vertical card layout like Amazon/Flipkart
+            for m in filtered_meds:
+                stock = m.get("stock_quantity", 0)
+                stock_color = "#22c55e" if stock > 50 else "#f59e0b" if stock > 10 else "#ef4444"
+                stock_text = "In Stock" if stock > 10 else "Low Stock" if stock > 0 else "Out of Stock"
+                stock_icon = "✅" if stock > 10 else "⚠️" if stock > 0 else "❌"
+
+                with st.container():
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(145deg, #1e293b, #0f172a);
+                                border: 1px solid rgba(100,116,139,0.3);
+                                border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem;
+                                display: flex; gap: 1.5rem;">
+                        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                                    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+                                    font-size: 2rem; flex-shrink: 0;">
+                            💊
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 1.1rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.3rem;">
+                                {m.get('name', 'Unknown')}
+                            </div>
+                            <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.5rem;">
+                                {m.get('category', 'General')} | {m.get('unit', 'tablet')} | {m.get('manufacturer', 'N/A')}
+                            </div>
+                            <div style="font-size: 0.85rem; color: #cbd5e1;">
+                                {m.get('composition', 'N/A')} | {m.get('dosage', 'N/A')}
+                            </div>
+                        </div>
+                        <div style="text-align: right; min-width: 120px;">
+                            <div style="font-size: 1.4rem; font-weight: 800; color: #0ea5e9; margin-bottom: 0.3rem;">
+                                ₹{m.get('unit_price', 0)}
+                            </div>
+                            <div style="font-size: 0.85rem; font-weight: 600; color: {stock_color};">
+                                {stock_icon} {stock_text}
+                            </div>
+                            <div style="font-size: 0.75rem; color: #64748b;">
+                                Stock: {stock}
+                            </div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    st.markdown("---")

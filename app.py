@@ -4,68 +4,91 @@ import db as db_module
 import base64
 import os
 
+@st.cache_data
 def _get_bg_image_b64() -> str:
-    """Load the background image and return as a base64 data URI."""
-    img_path = os.path.join(os.path.dirname(__file__), "background",
-                            "WhatsApp Image 2026-07-21 at 9.26.52 PM.jpeg")
-    img_path = os.path.abspath(img_path)
-    with open(img_path, "rb") as f:
-        data = base64.b64encode(f.read()).decode()
-    return f"data:image/jpeg;base64,{data}"
+    """Load the background image and return as a base64 data URI (cached)."""
+    try:
+        img_path = os.path.join(os.path.dirname(__file__), "background",
+                                "Gemini_Generated_Image_cd9c9qcd9c9qcd9c.png")
+        img_path = os.path.abspath(img_path)
+        with open(img_path, "rb") as f:
+            data = base64.b64encode(f.read()).decode()
+        return f"data:image/png;base64,{data}"
+    except Exception:
+        return ""
 
-# Set page configuration with medical theme styling
+@st.cache_data
+def _get_logo_b64() -> str:
+    """Load the custom logo image and return as a base64 data URI (cached)."""
+    try:
+        img_path = os.path.join(os.path.dirname(__file__), "static", "logo.jpg")
+        img_path = os.path.abspath(img_path)
+        with open(img_path, "rb") as f:
+            data = base64.b64encode(f.read()).decode()
+        return f"data:image/jpeg;base64,{data}"
+    except Exception:
+        return ""
+
+# Load favicon image for browser tab
+_favicon_path = os.path.join(os.path.dirname(__file__), "static", "logo.jpg")
+try:
+    from PIL import Image
+    _page_icon = Image.open(_favicon_path)
+except Exception:
+    _page_icon = "🏥"
+
+# Set page configuration with medical theme styling & custom logo favicon
 st.set_page_config(
     page_title="IPCMS - Integrated Patient Care Management System",
-    page_icon="🏥",
+    page_icon=_page_icon,
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Deep Obsidian & Neon Teal/Cyan Medical Theme
+# Professional Colorful White Medical Theme
 _bg_uri = _get_bg_image_b64()
 _LOGIN_CSS = """
 <style>
-    /* Google Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-    
-    /* Immersive Dark Background with background image */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    /* ── App Background ───────────────────────────────────── */
     .stApp {
-        background-image: url('__BG_IMAGE_URI__');
+        background-image: url('app/static/background.png');
         background-size: cover !important;
         background-position: center center !important;
         background-repeat: no-repeat !important;
         background-attachment: fixed !important;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        color: #f3f4f6;
+        font-family: 'Inter', sans-serif;
+        color: #0f172a;
     }
-
-    /* Dark overlay to make content readable */
     .stApp::before {
         content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(3, 7, 18, 0.85) !important;
+        position: fixed; top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(248, 250, 252, 0.88) !important;
         z-index: -1;
     }
-    
-    /* Hide Streamlit default UI elements */
+
+    /* ── Hide Streamlit chrome ────────────────────────────── */
     header, footer, [data-testid="stHeader"], [data-testid="stDecoration"] {
         visibility: hidden !important;
         height: 0px !important;
     }
 
-    /* Prevent top text clipping */
+    /* ── Layout padding ───────────────────────────────────── */
     .block-container,
     [data-testid="stMainBlockContainer"],
     [data-testid="stAppViewContainer"] section.main > div {
-        padding-top: 2.5rem !important;
-        padding-bottom: 2.5rem !important;
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
     }
 
-    /* Alert & notification box formatting */
+    /* ── Global text guarantee ────────────────────────────── */
+    p, span, label, div, h1, h2, h3, h4, h5, h6, li, td, th {
+        color: #0f172a;
+    }
+
+    /* ── Alert boxes ──────────────────────────────────────── */
     [data-testid="stAlert"],
     [data-baseweb="notification"],
     div[role="alert"],
@@ -76,288 +99,356 @@ _LOGIN_CSS = """
     div[class*="stSuccess"],
     div[class*="stInfo"],
     .stException {
-        border-radius: 14px !important;
-        border-left-width: 6px !important;
-        backdrop-filter: blur(12px) !important;
+        border-radius: 12px !important;
+        border-left-width: 5px !important;
         padding: 1rem 1.25rem !important;
         margin-top: 0.75rem !important;
         margin-bottom: 1.25rem !important;
         line-height: 1.6 !important;
-        min-height: 52px !important;
+        min-height: 48px !important;
         overflow: visible !important;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
     }
-
-    [data-testid="stAlert"] *,
-    [data-baseweb="notification"] *,
-    div[role="alert"] *,
-    [data-testid="stNotification"] *,
-    div[class*="stAlert"] *,
-    .stException * {
-        color: #ffffff !important;
-        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7) !important;
+    [data-testid="stAlert"] *, [data-baseweb="notification"] *,
+    div[role="alert"] *, [data-testid="stNotification"] *,
+    div[class*="stAlert"] *, .stException * {
+        text-shadow: none !important;
         line-height: 1.6 !important;
         overflow: visible !important;
-        vertical-align: middle !important;
-        font-size: 0.98rem !important;
+        font-size: 0.95rem !important;
         font-weight: 500 !important;
     }
-
     div[class*="stError"],
-    div[class*="Alert"][class*="error"],
     [data-baseweb="notification"][kind="negative"] {
-        background: rgba(220, 38, 38, 0.35) !important;
-        border: 1px solid rgba(239, 68, 68, 0.7) !important;
-        border-left: 6px solid #ef4444 !important;
-        color: #ffffff !important;
+        background: #fef2f2 !important;
+        border-left: 5px solid #dc2626 !important;
+        color: #7f1d1d !important;
     }
-    
-    /* Neon Glassmorphism Card */
+    div[class*="stError"] * { color: #7f1d1d !important; }
+    div[class*="stSuccess"],
+    [data-baseweb="notification"][kind="positive"] {
+        background: #f0fdf4 !important;
+        border-left: 5px solid #059669 !important;
+        color: #14532d !important;
+    }
+    div[class*="stSuccess"] * { color: #14532d !important; }
+    div[class*="stWarning"],
+    [data-baseweb="notification"][kind="warning"] {
+        background: #fffbeb !important;
+        border-left: 5px solid #d97706 !important;
+        color: #78350f !important;
+    }
+    div[class*="stWarning"] * { color: #78350f !important; }
+    div[class*="stInfo"],
+    [data-baseweb="notification"][kind="info"] {
+        background: #f0f9ff !important;
+        border-left: 5px solid #0369a1 !important;
+        color: #0c4a6e !important;
+    }
+    div[class*="stInfo"] * { color: #0c4a6e !important; }
+
+    /* ── Login card ───────────────────────────────────────── */
     .auth-card {
-        background: rgba(17, 24, 39, 0.75);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        padding: 3rem 2.5rem;
-        border-radius: 28px;
-        box-shadow: 0 0 40px rgba(14, 165, 233, 0.15), 
-                    inset 0 1px 2px rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(14, 165, 233, 0.25);
-        margin: 2rem auto;
-        max-width: 540px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px) saturate(160%);
+        -webkit-backdrop-filter: blur(20px) saturate(160%);
+        padding: 2.5rem 2.5rem;
+        border-radius: 24px;
+        box-shadow: 0 8px 40px rgba(3, 105, 161, 0.12),
+                    0 2px 12px rgba(0, 0, 0, 0.06),
+                    inset 0 1px 2px rgba(255, 255, 255, 1);
+        border: 1.5px solid #e2e8f0;
+        margin: 1.5rem auto;
+        max-width: 520px;
         animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    
     @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(30px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
-    
-    /* Glowing Title & Identity */
+
+    /* ── Logo & titles ────────────────────────────────────── */
     .med-logo {
         text-align: center;
-        font-size: 4rem;
-        margin-bottom: 0.5rem;
-        filter: drop-shadow(0 0 20px rgba(20, 184, 166, 0.6));
+        margin-bottom: 0.8rem;
     }
-    
+    .med-logo-img {
+        width: 90px;
+        height: 90px;
+        object-fit: contain;
+        filter: drop-shadow(0 6px 20px rgba(13, 148, 136, 0.35));
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border-radius: 20px;
+        background: #ffffff;
+        padding: 8px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    }
+    .med-logo-img:hover {
+        transform: scale(1.1) rotate(3deg);
+    }
     .med-title {
-        font-family: 'Space Grotesk', sans-serif;
-        color: #ffffff;
-        font-size: 2.5rem;
-        font-weight: 700;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 800;
         text-align: center;
         letter-spacing: -0.03em;
         margin-bottom: 0.5rem;
-        background: linear-gradient(135deg, #ffffff 30%, #0ea5e9 100%);
+        background: linear-gradient(135deg, #0f172a 0%, #0369a1 50%, #0ea5e9 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        text-shadow: 0 4px 12px rgba(14, 165, 233, 0.1);
+        text-shadow: none;
     }
-    
     .med-subtitle {
-        color: #9ca3af;
-        font-size: 1.05rem;
-        font-weight: 400;
+        color: #475569;
+        font-size: 0.95rem;
+        font-weight: 500;
         text-align: center;
-        margin-bottom: 2.5rem;
+        margin-bottom: 2rem;
     }
-    
-    /* Styled Input Fields (Streamlit overrides for dark mode) */
-    div[data-baseweb="input"] {
-        border-radius: 14px !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        background-color: rgba(3, 7, 18, 0.6) !important;
+
+    /* ── Role selection buttons ───────────────────────────── */
+    .role-selector-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #475569;
+        margin-bottom: 0.6rem;
+        display: block;
+    }
+
+    /* Patient role button */
+    button[data-testid="baseButton-secondary"][key="btn_login_patient"],
+    button[kind="secondary"] {
+        background: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        transition: all 0.2s ease !important;
+    }
+    button[kind="secondary"]:hover {
+        background: #f0f9ff !important;
+        border-color: #0ea5e9 !important;
+        color: #0369a1 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 14px rgba(3, 105, 161, 0.15) !important;
+    }
+
+    /* ── Inputs & Selectboxes ─────────────────────────────── */
+    div[data-baseweb="input"],
+    div[data-baseweb="select"],
+    div[data-baseweb="select"] > div,
+    div[data-baseweb="select"] > div > div {
+        border-radius: 12px !important;
+        border: 1.5px solid #cbd5e1 !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
         transition: all 0.25s ease !important;
     }
-    
-    div[data-baseweb="input"]:focus-within {
-        border-color: #14b8a6 !important;
-        box-shadow: 0 0 15px rgba(20, 184, 166, 0.25) !important;
-        background-color: rgba(3, 7, 18, 0.8) !important;
+    div[data-baseweb="input"]:focus-within,
+    div[data-baseweb="select"] > div:focus-within {
+        border-color: #0369a1 !important;
+        box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.12) !important;
+        background-color: #ffffff !important;
     }
-    
+    div[data-baseweb="select"] *,
+    div[data-baseweb="select"] span,
+    div[data-baseweb="select"] input,
+    div[data-baseweb="value-container"] * {
+        color: #0f172a !important;
+        fill: #0f172a !important;
+    }
+    div[data-baseweb="select"] svg { fill: #0f172a !important; }
     input {
-        color: #f3f4f6 !important;
+        color: #0f172a !important;
+        font-family: 'Inter', sans-serif !important;
     }
-    
-    /* Custom tab navigation styling */
+    input::placeholder { color: #94a3b8 !important; }
+
+    /* Popover dropdown menu */
+    ul[data-baseweb="menu"],
+    div[data-baseweb="popover"],
+    div[data-baseweb="popover"] > div,
+    [data-baseweb="popover"] [role="listbox"] {
+        background-color: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    }
+    li[role="option"],
+    div[role="option"],
+    [data-baseweb="popover"] li,
+    [data-baseweb="popover"] div,
+    [data-baseweb="menu"] * {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.92rem !important;
+    }
+    li[role="option"]:hover,
+    div[role="option"]:hover,
+    [data-baseweb="menu"] li:hover {
+        background-color: #e0f2fe !important;
+        color: #0369a1 !important;
+    }
+
+    /* Widget label visibility */
+    [data-testid="stWidgetLabel"],
+    [data-testid="stWidgetLabel"] * {
+        color: #0f172a !important;
+        font-weight: 500 !important;
+    }
+
+    /* ── Tabs — login page ────────────────────────────────── */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 12px;
-        background-color: rgba(3, 7, 18, 0.6);
-        padding: 8px;
-        border-radius: 18px;
-        margin-bottom: 2rem;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: #f1f5f9;
+        padding: 6px;
+        border-radius: 16px;
+        margin-bottom: 1.8rem;
+        border: 1.5px solid #e2e8f0;
+        gap: 4px;
     }
-    
     .stTabs [data-baseweb="tab"] {
-        height: 44px;
+        height: 42px;
         background-color: transparent;
-        border-radius: 12px;
-        color: #9ca3af;
+        border-radius: 10px;
+        color: #64748b !important;
         font-weight: 600;
-        font-size: 0.95rem;
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        font-size: 0.9rem;
+        transition: all 0.25s ease;
         flex: 1;
         text-align: center;
         border: none !important;
     }
-    
     .stTabs [aria-selected="true"] {
-        background-color: #0ea5e9 !important;
+        background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%) !important;
         color: #ffffff !important;
-        box-shadow: 0 4px 20px rgba(14, 165, 233, 0.4) !important;
+        box-shadow: 0 4px 14px rgba(3, 105, 161, 0.3) !important;
+        border: none !important;
     }
-    
-    /* Styled Submit Button */
+    .stTabs [data-baseweb="tab"]:hover {
+        background: #ffffff !important;
+        color: #0369a1 !important;
+    }
+
+    /* ── Primary button ───────────────────────────────────── */
     button[kind="primary"] {
-        background: linear-gradient(135deg, #0ea5e9 0%, #14b8a6 100%) !important;
+        background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%) !important;
         color: #ffffff !important;
         border: none !important;
-        border-radius: 14px !important;
-        padding: 0.85rem 1.5rem !important;
+        border-radius: 12px !important;
+        padding: 0.8rem 1.5rem !important;
         font-weight: 700 !important;
-        font-size: 1.05rem !important;
-        letter-spacing: 0.025em;
-        box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3) !important;
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        font-size: 1rem !important;
+        letter-spacing: 0.02em;
+        box-shadow: 0 4px 18px rgba(3, 105, 161, 0.3) !important;
+        transition: all 0.3s ease !important;
         width: 100% !important;
     }
-    
     button[kind="primary"]:hover {
         transform: translateY(-2px) !important;
-        box-shadow: 0 6px 24px rgba(20, 184, 166, 0.45) !important;
-        background: linear-gradient(135deg, #14b8a6 0%, #0ea5e9 100%) !important;
+        box-shadow: 0 8px 28px rgba(3, 105, 161, 0.45) !important;
+        background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%) !important;
     }
-    
-    button[kind="primary"]:active {
-        transform: translateY(0) !important;
-    }
-    
-    /* Role Card Selector CSS */
-    .role-container {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 1.5rem;
-    }
-    
-    .role-option {
-        flex: 1;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
-        padding: 12px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.25s ease;
-    }
-    
-    .role-option:hover {
-        background: rgba(14, 165, 233, 0.05);
-        border-color: rgba(14, 165, 233, 0.3);
-    }
-    
-    .role-option.active {
-        background: rgba(14, 165, 233, 0.12);
-        border-color: #0ea5e9;
-        box-shadow: 0 0 15px rgba(14, 165, 233, 0.2);
-    }
-    
-    /* Fixed Bottom Left Compliance Card */
+    button[kind="primary"]:active { transform: translateY(0) !important; }
+
+    /* ── Bottom-left compliance card ──────────────────────── */
     .bottom-left-decor {
         position: fixed;
-        bottom: 24px;
-        left: 24px;
-        background: rgba(17, 24, 39, 0.6);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(14, 165, 233, 0.2);
+        bottom: 24px; left: 24px;
+        background: rgba(255, 255, 255, 0.97);
+        backdrop-filter: blur(20px);
+        border: 1.5px solid #e2e8f0;
         border-radius: 16px;
         padding: 16px;
         max-width: 280px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 8px 30px rgba(3, 105, 161, 0.12);
         z-index: 999;
         animation: slideRight 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    
     @keyframes slideRight {
-        from {
-            opacity: 0;
-            transform: translateX(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
+        from { opacity: 0; transform: translateX(-30px); }
+        to   { opacity: 1; transform: translateX(0); }
     }
-    
-    /* Google OAuth Button */
+
+    /* ── Google OAuth button ──────────────────────────────── */
     .google-btn {
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: rgba(255, 255, 255, 0.05);
-        color: #f3f4f6;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 0.85rem 1.5rem;
-        border-radius: 14px;
+        background-color: #ffffff;
+        color: #0f172a;
+        border: 1.5px solid #e2e8f0;
+        padding: 0.8rem 1.5rem;
+        border-radius: 12px;
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 0.95rem;
         text-decoration: none;
         transition: all 0.25s ease;
         margin-top: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
-    
     .google-btn:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-color: rgba(14, 165, 233, 0.5);
-        box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
-        color: #ffffff;
-        transform: translateY(-1px);
+        background-color: #f0f9ff;
+        border-color: #0ea5e9;
+        box-shadow: 0 6px 20px rgba(3, 105, 161, 0.18);
+        color: #0f172a;
+        transform: translateY(-2px);
     }
-    
-    .google-icon {
-        margin-right: 12px;
-        width: 22px;
-        height: 22px;
-    }
-    
-    /* Divider styling */
+    .google-icon { margin-right: 12px; width: 22px; height: 22px; }
+
+    /* ── Divider ──────────────────────────────────────────── */
     .divider {
         display: flex;
         align-items: center;
         text-align: center;
-        color: #6b7280;
-        margin: 2.2rem 0 1.2rem 0;
-        font-size: 0.85rem;
+        color: #94a3b8;
+        margin: 2rem 0 1rem 0;
+        font-size: 0.8rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.1em;
     }
-    
     .divider::before, .divider::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        content: ''; flex: 1;
+        border-bottom: 1px solid #e2e8f0;
     }
-    
-    .divider:not(:empty)::before {
-        margin-right: 1.2em;
+    .divider:not(:empty)::before { margin-right: 1em; }
+    .divider:not(:empty)::after  { margin-left: 1em; }
+
+    /* ── Role button highlights (active role indicator) ───── */
+    .role-active-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
     }
-    
-    .divider:not(:empty)::after {
-        margin-left: 1.2em;
+    .role-badge-patient {
+        background: #e0f2fe;
+        color: #0369a1;
+        border: 1.5px solid #7dd3fc;
     }
-    
+    .role-badge-doctor {
+        background: #d1fae5;
+        color: #059669;
+        border: 1.5px solid #6ee7b7;
+    }
+    .role-badge-admin {
+        background: #fef3c7;
+        color: #d97706;
+        border: 1.5px solid #fcd34d;
+    }
+
 </style>
 """
-st.markdown(_LOGIN_CSS.replace("__BG_IMAGE_URI__", _bg_uri), unsafe_allow_html=True)
+st.markdown(_LOGIN_CSS, unsafe_allow_html=True)
+if _bg_uri:
+    st.markdown(f"<style>.stApp {{ background-image: url('{_bg_uri}') !important; }}</style>", unsafe_allow_html=True)
 
 # Get current DB type for status indicator
 try:
@@ -401,17 +492,17 @@ if not st.session_state.authenticated:
 
     st.markdown(f"""
     <div class="bottom-left-decor">
-        <div style="font-size: 0.75rem; text-transform: uppercase; color: #14b8a6; font-weight: 800; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px;">
-            <span style="display:inline-block; width:6px; height:6px; background:#14b8a6; border-radius:50%; box-shadow: 0 0 8px #14b8a6;"></span>
+        <div style="font-size: 0.72rem; text-transform: uppercase; color: #059669; font-weight: 800; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px;">
+            <span style="display:inline-block; width:6px; height:6px; background:#059669; border-radius:50%; box-shadow: 0 0 6px #059669;"></span>
             HIPAA COMPLIANT
         </div>
-        <div style="font-size: 0.85rem; font-weight: 700; color: #ffffff; margin-top: 6px;">
-            Secure CareNet Gateway
+        <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a; margin-top: 6px;">
+            🔒 Secure CareNet Gateway
         </div>
-        <div style="font-size: 0.75rem; color: #9ca3af; margin-top: 4px; line-height: 1.4;">
+        <div style="font-size: 0.75rem; color: #475569; margin-top: 4px; line-height: 1.4;">
             End-to-end encrypted medical logs. Unauthorized access is strictly monitored.
         </div>
-        <div style="display: flex; align-items: center; gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08);">
+        <div style="display: flex; align-items: center; gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
             <span style="display:inline-block; width:6px; height:6px; background:{_db_color}; border-radius:50%; box-shadow: 0 0 6px {_db_color}; flex-shrink:0;"></span>
             <span style="font-size: 0.72rem; color: {_db_color}; font-weight: 700;">{_db_label}</span>
         </div>
@@ -585,9 +676,12 @@ elif st.session_state.oauth_flow:
 
 else:
     # Login / Signup landing forms
-    st.markdown("""
+    _logo_data = _get_logo_b64()
+    _logo_markup = f'<img src="{_logo_data}" class="med-logo-img" alt="IPCMS Logo" />' if _logo_data else '<span>🏥</span>'
+
+    st.markdown(f"""
     <div class="med-logo">
-        <span>🏥</span>
+        {_logo_markup}
     </div>
     <div class="med-title">CareNet Platform</div>
     <div class="med-subtitle">Integrated Patient Care Management System</div>
@@ -600,20 +694,50 @@ else:
     tab_login, tab_signup = st.tabs(["🔒 Secure Login", "📝 Create Account"])
     
     with tab_login:
-        st.markdown("<p style='font-size:0.9rem; color:#9ca3af; margin-bottom:0.5rem;'>SELECT PORTAL ROLE</p>", unsafe_allow_html=True)
+        st.markdown("<p class='role-selector-label'>SELECT PORTAL ROLE</p>", unsafe_allow_html=True)
         col_pat, col_doc, col_adm = st.columns(3)
         with col_pat:
-            if st.button("👤 Patient", key="btn_login_patient", use_container_width=True, type="secondary"):
+            is_pat = st.session_state.selected_role == "Patient"
+            if st.button(
+                "👤 Patient",
+                key="btn_login_patient",
+                use_container_width=True,
+                type="primary" if is_pat else "secondary"
+            ):
                 st.session_state.selected_role = "Patient"
+                st.rerun()
         with col_doc:
-            if st.button("🩺 Doctor", key="btn_login_doctor", use_container_width=True, type="secondary"):
+            is_doc = st.session_state.selected_role == "Doctor"
+            if st.button(
+                "🩺 Doctor",
+                key="btn_login_doctor",
+                use_container_width=True,
+                type="primary" if is_doc else "secondary"
+            ):
                 st.session_state.selected_role = "Doctor"
+                st.rerun()
         with col_adm:
-            if st.button("🔑 Admin", key="btn_login_admin", use_container_width=True, type="secondary"):
+            is_adm = st.session_state.selected_role == "Admin"
+            if st.button(
+                "🔑 Admin",
+                key="btn_login_admin",
+                use_container_width=True,
+                type="primary" if is_adm else "secondary"
+            ):
                 st.session_state.selected_role = "Admin"
-                
-        # Highlight active role choice
-        st.markdown(f"<div style='text-align:center; font-size:0.9rem; font-weight:600; color:#14b8a6; margin-bottom:1.5rem;'>Access Level Selected: {st.session_state.selected_role}</div>", unsafe_allow_html=True)
+                st.rerun()
+
+        # Highlight active role choice with a colorful badge
+        _role_badge_cls = {"Patient": "role-badge-patient", "Doctor": "role-badge-doctor", "Admin": "role-badge-admin"}
+        _role_icons     = {"Patient": "👤", "Doctor": "🩺", "Admin": "🔑"}
+        _badge_cls = _role_badge_cls.get(st.session_state.selected_role, "role-badge-patient")
+        _icon      = _role_icons.get(st.session_state.selected_role, "👤")
+        st.markdown(
+            f"<div style='text-align:center; margin-bottom:1.2rem;'>"
+            f"<span class='role-active-badge {_badge_cls}'>{_icon} {st.session_state.selected_role} Portal Selected</span>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
         
         email = st.text_input("Email Address", placeholder="e.g. name@carenet.com", key="login_email")
         password = st.text_input("Password", type="password", placeholder="••••••••", key="login_pass")
@@ -639,19 +763,41 @@ else:
                     st.error(response)
                     
     with tab_signup:
-        st.markdown("<p style='font-size:0.9rem; color:#9ca3af; margin-bottom:0.5rem;'>REGISTER AS</p>", unsafe_allow_html=True)
+        st.markdown("<p class='role-selector-label'>REGISTER AS</p>", unsafe_allow_html=True)
         col_pat_s, col_adm_s = st.columns(2)
-        with col_pat_s:
-            if st.button("👤 Patient", key="btn_signup_patient", use_container_width=True):
-                st.session_state.selected_role = "Patient"
-        with col_adm_s:
-            if st.button("🔑 Admin", key="btn_signup_admin", use_container_width=True):
-                st.session_state.selected_role = "Admin"
-                
         if st.session_state.selected_role not in ["Patient", "Admin"]:
             st.session_state.selected_role = "Patient"
-            
-        st.markdown(f"<div style='text-align:center; font-size:0.9rem; font-weight:600; color:#14b8a6; margin-bottom:1.5rem;'>Account Type Selected: {st.session_state.selected_role}</div>", unsafe_allow_html=True)
+        with col_pat_s:
+            is_pat_s = st.session_state.selected_role == "Patient"
+            if st.button(
+                "👤 Patient",
+                key="btn_signup_patient",
+                use_container_width=True,
+                type="primary" if is_pat_s else "secondary"
+            ):
+                st.session_state.selected_role = "Patient"
+                st.rerun()
+        with col_adm_s:
+            is_adm_s = st.session_state.selected_role == "Admin"
+            if st.button(
+                "🔑 Admin",
+                key="btn_signup_admin",
+                use_container_width=True,
+                type="primary" if is_adm_s else "secondary"
+            ):
+                st.session_state.selected_role = "Admin"
+                st.rerun()
+
+        _role_badge_cls2 = {"Patient": "role-badge-patient", "Admin": "role-badge-admin"}
+        _role_icons2     = {"Patient": "👤", "Admin": "🔑"}
+        _badge_cls2 = _role_badge_cls2.get(st.session_state.selected_role, "role-badge-patient")
+        _icon2      = _role_icons2.get(st.session_state.selected_role, "👤")
+        st.markdown(
+            f"<div style='text-align:center; margin-bottom:1.2rem;'>"
+            f"<span class='role-active-badge {_badge_cls2}'>{_icon2} {st.session_state.selected_role} Account</span>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
         
         name_signup = st.text_input("Full Name", placeholder="e.g. John Doe", key="signup_name")
         email_signup = st.text_input("Email Address", placeholder="e.g. john@domain.com", key="signup_email")

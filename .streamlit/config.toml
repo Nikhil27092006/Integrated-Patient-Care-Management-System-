@@ -1,6 +1,10 @@
 [server]
 enableStaticServing = true
 
-[static]
-# Directory for static files
-directory = "background"
+[theme]
+primaryColor = "#0369a1"
+backgroundColor = "#f8fafc"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#0f172a"
+font = "sans serif"
+base = "light"

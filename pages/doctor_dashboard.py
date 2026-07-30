@@ -5,7 +5,7 @@ import db
 import plotly.graph_objects as go
 from datetime import date, time, timedelta
 from pages.shared_styles import (inject_css, sidebar_header, page_header,
-                                  stat_cards, status_badge, PLOTLY_LAYOUT, sidebar_footer)
+                                  stat_cards, status_badge, PLOTLY_LAYOUT, sidebar_footer, medical_banner)
 import ai_care
 
 def _weekly_calendar(appts: list, week_start: date):
@@ -22,32 +22,32 @@ def _weekly_calendar(appts: list, week_start: date):
     cols = st.columns(6)
     for i, (d, col) in enumerate(zip(week_days, cols)):
         is_today     = (d == today)
-        header_color = "#0ea5e9" if is_today else "#6b7280"
-        border       = "rgba(14,165,233,0.6)" if is_today else "rgba(14,165,233,0.12)"
-        bg           = "rgba(14,165,233,0.07)" if is_today else "rgba(10,22,40,0.5)"
+        header_color = "#0369a1" if is_today else "#64748b"
+        border       = "#7dd3fc" if is_today else "#e2e8f0"
+        bg           = "#f0f9ff" if is_today else "#ffffff"
 
         events_html = ""
         for a in cal[str(d)]:
-            s_color = {"confirmed":"#14b8a6","pending":"#f59e0b",
-                       "completed":"#10b981","cancelled":"#ef4444"}.get(
-                           a.get("status","pending"), "#9ca3af")
+            s_color = {"confirmed":"#059669","pending":"#d97706",
+                       "completed":"#0369a1","cancelled":"#dc2626"}.get(
+                           a.get("status","pending"), "#64748b")
             events_html += f"""
-            <div class="cal-event" style="border-left-color: {s_color};">
-                <b>{str(a['start_time'])[:5]}</b><br>
-                {a['patient_name']}<br>
-                <span style="opacity:0.7">{a.get('reason','') or ''}</span>
+            <div class="cal-event" style="border-left-color: {s_color}; background:#ffffff; color:#0f172a; border: 1px solid #e2e8f0; border-left: 4px solid {s_color};">
+                <b style="color:#0f172a;">{str(a['start_time'])[:5]}</b><br>
+                <span style="color:#0f172a; font-weight:600;">{a['patient_name']}</span><br>
+                <span style="color:#64748b;">{a.get('reason','') or ''}</span>
             </div>"""
 
         with col:
             st.markdown(f"""
-            <div style="background:{bg};border:1px solid {border};border-radius:14px;
-                        padding:0.7rem 0.6rem;min-height:140px;">
+            <div style="background:{bg};border:1.5px solid {border};border-radius:12px;
+                        padding:0.7rem 0.6rem;min-height:140px;box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
                 <div style="font-size:0.7rem;font-weight:700;color:{header_color};
                             text-transform:uppercase;margin-bottom:3px;">{day_names[i]}</div>
-                <div style="font-size:0.9rem;font-weight:600;color:#e2e8f0;margin-bottom:8px;">
-                    {d.strftime('%d')} <span style="font-size:0.65rem;color:#9ca3af;">{d.strftime('%b')}</span>
+                <div style="font-size:0.9rem;font-weight:700;color:#0f172a;margin-bottom:8px;">
+                    {d.strftime('%d')} <span style="font-size:0.65rem;color:#64748b;">{d.strftime('%b')}</span>
                 </div>
-                {events_html if events_html else '<div style="font-size:0.68rem;color:#374151;margin-top:4px;">—</div>'}
+                {events_html if events_html else '<div style="font-size:0.7rem;color:#94a3b8;margin-top:4px;">—</div>'}
             </div>
             """, unsafe_allow_html=True)
 
@@ -113,18 +113,7 @@ def render():
         specialty = doc_profile["specialty_name"] if doc_profile and doc_profile.get("specialty_name") else "General Practitioner"
         exp       = doc_profile["experience_years"] if doc_profile else 0
 
-        # Animated medical header
-        st.markdown("""
-        <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 10px; flex-wrap: wrap;">
-            <span class="stethoscope-icon" style="font-size: 2rem;">🩺</span>
-            <span class="heart-pulse" style="font-size: 2rem;"></span>
-            <span class="medical-cross" style="font-size: 1.8rem;">➕</span>
-            <span class="dna-animation" style="font-size: 1.5rem;">
-                <span></span><span></span><span></span><span></span><span></span>
-            </span>
-            <span class="hospital-glow" style="font-size: 1.8rem;">🏥</span>
-        </div>
-        """, unsafe_allow_html=True)
+        medical_banner("Doctor")
 
         page_header(f"Dr. {user['name']}", f"{specialty}  ·  {exp} yrs experience")
 
@@ -165,19 +154,19 @@ def render():
                     if patient_phone:
                         contact_info += f" | 📞 {patient_phone}"
                     st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, rgba(10,22,40,0.7), rgba(15,30,60,0.6));
-                                border: 1px solid rgba(245,158,11,0.25);
-                                border-radius: 12px; padding: 0.8rem 1.1rem;
-                                box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                    <div style="background: #ffffff;
+                                border: 1.5px solid #e2e8f0;
+                                border-radius: 12px; padding: 0.9rem 1.1rem;
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                            <span style="font-weight:700;color:#e2e8f0;">👤 {a['patient_name']}</span>
-                            <span style="color:#0ea5e9;font-size:0.78rem;">(ID: #{a['patient_id']})</span>
-                            <span style="color:#9ca3af;font-size:0.85rem; margin-left: 8px;">
+                            <span style="font-weight:700;color:#0f172a;">👤 {a['patient_name']}</span>
+                            <span style="color:#0369a1;font-size:0.78rem;font-weight:600;">(ID: #{a['patient_id']})</span>
+                            <span style="color:#475569;font-size:0.85rem; margin-left: 8px; font-weight:500;">
                                 📅 {a['scheduled_date']} @ {str(a['start_time'])[:5]}
                             </span>
                         </div>
-                        <div style="color:#9ca3af;font-size:0.82rem; margin-top: 4px;">{a['reason'] or ''}</div>
-                        {f'<div style="color:#14b8a6;font-size:0.78rem; margin-top: 4px;">{contact_info}</div>' if contact_info else ''}
+                        <div style="color:#475569;font-size:0.85rem; margin-top: 4px;">{a['reason'] or ''}</div>
+                        {f'<div style="color:#059669;font-size:0.8rem; margin-top: 4px; font-weight:500;">{contact_info}</div>' if contact_info else ''}
                     </div>
                     """, unsafe_allow_html=True)
                 with col_c:
@@ -388,19 +377,19 @@ def render():
                             st.markdown("**📋 Health Records:**")
                             for r in records[:5]:
                                 st.markdown(f"""
-                                <div style="background: linear-gradient(135deg, rgba(10,22,40,0.65), rgba(15,30,60,0.55));
-                                            border: 1px solid rgba(14,165,233,0.15);
+                                <div style="background: #ffffff;
+                                            border: 1.5px solid #e2e8f0;
                                             border-radius: 10px; padding: 0.7rem 1rem; margin-bottom: 8px;
-                                            font-size: 0.82rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
-                                    <b style="color:#0ea5e9;">{str(r['recorded_at'])[:10]}</b>
-                                    {"  ·  Dx: " + (r['diagnosis'] or '') if r['diagnosis'] else ''}
+                                            font-size: 0.85rem; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                                    <b style="color:#0369a1;">{str(r['recorded_at'])[:10]}</b>
+                                    {"  ·  <span style='color:#0f172a;font-weight:600;'>Dx: " + (r['diagnosis'] or '') + "</span>" if r['diagnosis'] else ''}
                                     <br>
-                                    <span style="color:#9ca3af;">
+                                    <span style="color:#475569;">
                                         ❤️ {r['heart_rate'] or '—'} bpm &nbsp;|&nbsp;
                                         🩸 {r['blood_pressure'] or '—'} &nbsp;|&nbsp;
                                         💨 SpO₂ {r['pulse_oximetry'] or '—'}%
                                     </span>
-                                    {f'<br><span style="color:#6b7280;">{r["notes"]}</span>' if r['notes'] else ''}
+                                    {f'<br><span style="color:#64748b;">{r["notes"]}</span>' if r['notes'] else ''}
                                 </div>
                                 """, unsafe_allow_html=True)
                         else:
@@ -562,25 +551,67 @@ def render():
                 my_prescriptions = db.fetch_prescriptions(doctor_id=doctor_id)
                 if my_prescriptions:
                     for pres in my_prescriptions:
-                        status_color = {"active": "#14b8a6", "completed": "#10b981", "cancelled": "#ef4444"}.get(pres["status"], "#9ca3af")
-                        st.markdown(f"""
-                        <div style="background: rgba(17,24,39,0.5); border: 1px solid rgba(14,165,233,0.2);
-                                    border-radius: 12px; padding: 1rem; margin: 0.5rem 0;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <div>
-                                    <b style="color:#0ea5e9;">{pres['medicine_name']}</b>
-                                    <span style="color:#9ca3af; margin-left: 8px;">({pres['medicine_dosage']})</span>
-                                </div>
-                                <div style="color: {status_color}; font-weight: bold;">{pres['status'].upper()}</div>
-                            </div>
-                            <div style="font-size: 0.85rem; color:#9ca3af; margin-top: 5px;">
-                                👤 Patient: {pres['patient_name']} | 💊 Qty: {pres['quantity']}
-                            </div>
-                            <div style="font-size: 0.85rem; color:#9ca3af;">
-                                📝 {pres['dosageInstructions']} - {pres['frequency']} - {pres['duration']}
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        status_color = {"active": "#059669", "completed": "#0369a1", "cancelled": "#dc2626"}.get(pres["status"], "#64748b")
+                        
+                        col_main, col_btns = st.columns([6, 1])
+                        with col_main:
+                            st.markdown(f'<div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 1rem; margin-bottom: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);"><div style="display: flex; justify-content: space-between; align-items: center;"><div><b style="color:#0369a1; font-size: 1.1rem;">{pres["medicine_name"]}</b><span style="color:#475569; margin-left: 8px; font-weight:500;">({pres["medicine_dosage"]})</span></div><div style="color: {status_color}; font-weight: 700; font-size: 0.8rem; letter-spacing: 0.05em;">{pres["status"].upper()}</div></div><div style="font-size: 0.88rem; color:#0f172a; margin-top: 6px;"><b>👤 Patient:</b> {pres["patient_name"]} | <b>💊 Qty:</b> {pres["quantity"]}</div><div style="font-size: 0.85rem; color:#475569; margin-top: 3px;">📝 {pres["dosageInstructions"]} - {pres["frequency"]} - {pres["duration"]}</div></div>', unsafe_allow_html=True)
+                        
+                        with col_btns:
+                            st.markdown("<div style='margin-top: 0.5rem;'></div>", unsafe_allow_html=True)
+                            if st.button("✏️", key=f"btn_edit_{pres['id']}", help="Edit Prescription"):
+                                st.session_state["edit_pres_id"] = pres["id"]
+                                if "del_pres_id" in st.session_state: del st.session_state["del_pres_id"]
+                                st.rerun()
+                            if st.button("🗑️", key=f"btn_del_{pres['id']}", help="Delete Prescription"):
+                                st.session_state["del_pres_id"] = pres["id"]
+                                if "edit_pres_id" in st.session_state: del st.session_state["edit_pres_id"]
+                                st.rerun()
+                                
+                        # Inline Edit Form
+                        if st.session_state.get("edit_pres_id") == pres["id"]:
+                            with st.container():
+                                st.markdown("<div style='background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px;'>", unsafe_allow_html=True)
+                                st.write("**✏️ Edit Prescription**")
+                                with st.form(key=f"edit_form_{pres['id']}"):
+                                    e_dose = st.text_input("Dosage", value=pres['dosageInstructions'])
+                                    e_freq = st.text_input("Frequency", value=pres['frequency'])
+                                    e_dur = st.text_input("Duration", value=pres['duration'])
+                                    e_qty = st.number_input("Quantity", value=pres['quantity'], min_value=1, step=1)
+                                    e_notes = st.text_input("Notes", value=pres['notes'] or "")
+                                    
+                                    c1, c2, _ = st.columns([1, 1, 3])
+                                    if c1.form_submit_button("Save", type="primary"):
+                                        success, msg = db.update_prescription(pres['id'], e_dose, e_freq, e_dur, e_qty, e_notes)
+                                        if success:
+                                            del st.session_state["edit_pres_id"]
+                                            st.toast(msg, icon="✅")
+                                            st.rerun()
+                                        else:
+                                            st.error(msg)
+                                    if c2.form_submit_button("Cancel"):
+                                        del st.session_state["edit_pres_id"]
+                                        st.rerun()
+                                st.markdown("</div>", unsafe_allow_html=True)
+
+                        # Inline Delete Confirmation
+                        if st.session_state.get("del_pres_id") == pres["id"]:
+                            with st.container():
+                                st.markdown("<div style='background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 15px; margin-bottom: 15px;'>", unsafe_allow_html=True)
+                                st.warning("Are you sure you want to delete this prescription? The medicine stock will be refunded.")
+                                c1, c2, _ = st.columns([1, 1, 3])
+                                if c1.button("✅ Yes, Delete", key=f"confirm_del_{pres['id']}", type="primary"):
+                                    success, msg = db.delete_prescription(pres['id'])
+                                    if success:
+                                        del st.session_state["del_pres_id"]
+                                        st.toast(msg, icon="✅")
+                                        st.rerun()
+                                    else:
+                                        st.error(msg)
+                                if c2.button("❌ Cancel", key=f"cancel_del_{pres['id']}"):
+                                    del st.session_state["del_pres_id"]
+                                    st.rerun()
+                                st.markdown("</div>", unsafe_allow_html=True)
                 else:
                     st.info("No prescriptions created yet.")
 

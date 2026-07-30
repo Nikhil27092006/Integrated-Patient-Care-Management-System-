@@ -7,7 +7,7 @@ import plotly.express as px
 import pandas as pd
 from datetime import date, timedelta
 from pages.shared_styles import (inject_css, sidebar_header, page_header,
-                                  stat_cards, status_badge, PLOTLY_LAYOUT, sidebar_footer)
+                                  stat_cards, status_badge, PLOTLY_LAYOUT, sidebar_footer, medical_banner)
 import ai_care
 
 def render():
@@ -55,23 +55,7 @@ def render():
     #                           | Specialties | Records | All appointments
     # ════════════════════════════════════════════════════════════════════
     if page == "console":
-        # Animated admin medical header
-        st.markdown("""
-        <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 10px; flex-wrap: wrap;">
-            <span class="hospital-glow" style="font-size: 2rem;">🏥</span>
-            <span class="medical-cross" style="font-size: 1.8rem;">➕</span>
-            <span class="shield-pulse" style="font-size: 1.8rem;">🛡️</span>
-            <span class="dna-animation" style="font-size: 1.5rem;">
-                <span></span><span></span><span></span><span></span><span></span>
-            </span>
-            <span class="chart-animate" style="font-size: 1.8rem;">📊</span>
-            <span class="first-aid" style="font-size: 1.8rem;">🏥</span>
-        </div>
-        <style>
-        .shield-pulse { animation: cross-pulse 2s ease-in-out infinite; display: inline-block; }
-        .chart-animate { animation: fadeSlideIn 1s ease-in-out infinite; }
-        </style>
-        """, unsafe_allow_html=True)
+        medical_banner("Admin")
 
         page_header("Admin Console", "Full oversight of IPCMS")
 
@@ -226,18 +210,18 @@ def render():
                     appts_today = db.fetch_appointments(doctor_id=doc["id"], date_filter=date.today())
                     status_txt = f"📅 {len(appts_today)} appointment(s) today"
                     st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, rgba(10,22,40,0.75), rgba(15,30,60,0.65));
-                                border: 1px solid rgba(14,165,233,0.15);
+                    <div style="background: #ffffff;
+                                border: 1.5px solid #e2e8f0;
                                 border-radius: 12px; padding: 0.9rem 1.2rem; margin-bottom: 0.7rem;
-                                box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex;
+                                box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex;
                                 align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-weight: 700; color: #ffffff; font-size: 0.95rem;">Dr. {doc['full_name']}</span>
-                            <span style="font-size: 0.8rem; color: #0ea5e9; margin-left: 8px;">
+                            <span style="font-weight: 700; color: #0f172a; font-size: 0.95rem;">Dr. {doc['full_name']}</span>
+                            <span style="font-size: 0.8rem; color: #0369a1; margin-left: 8px; font-weight:600;">
                                 {doc['specialty'] if doc.get('specialty') else 'General'}
                             </span>
                         </div>
-                        <div style="font-size: 0.82rem; color: #14b8a6; font-weight: 600;">{status_txt}</div>
+                        <div style="font-size: 0.82rem; color: #059669; font-weight: 600;">{status_txt}</div>
                     </div>
                     """, unsafe_allow_html=True)
             else:
@@ -389,19 +373,19 @@ def render():
                     for med in medicines:
                         stock_color = "green" if med["stock_quantity"] > 50 else "orange" if med["stock_quantity"] > 20 else "red"
                         st.markdown(f"""
-                        <div style="background: rgba(17,24,39,0.5); border: 1px solid rgba(14,165,233,0.2);
-                                    border-radius: 12px; padding: 1rem; margin: 0.5rem 0;">
+                        <div style="background: #ffffff; border: 1.5px solid #e2e8f0;
+                                    border-radius: 12px; padding: 1rem; margin: 0.5rem 0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <div>
-                                    <b style="color:#0ea5e9; font-size: 1.1rem;">{med['name']}</b>
-                                    <span style="color:#9ca3af; margin-left: 10px;">{med['category']}</span>
+                                    <b style="color:#0369a1; font-size: 1.1rem;">{med['name']}</b>
+                                    <span style="color:#475569; margin-left: 10px;">{med['category']}</span>
                                 </div>
                                 <div style="text-align: right;">
                                     <div style="color: {stock_color}; font-weight: bold;">Stock: {med['stock_quantity']}</div>
-                                    <div style="color:#9ca3af; font-size: 0.85rem;">₹{med['unit_price']}</div>
+                                    <div style="color:#0f172a; font-size: 0.85rem; font-weight:600;">₹{med['unit_price']}</div>
                                 </div>
                             </div>
-                            <div style="font-size: 0.85rem; color:#9ca3af; margin-top: 5px;">
+                            <div style="font-size: 0.85rem; color:#475569; margin-top: 5px;">
                                 {med['manufacturer']} | {med['dosage']} | Exp: {med['expiry_date']}
                             </div>
                         </div>
@@ -463,9 +447,9 @@ def render():
                         with col_info:
                             stock_color = "green" if med["stock_quantity"] > 50 else "orange" if med["stock_quantity"] > 20 else "red"
                             st.markdown(f"""
-                            <div style="background: rgba(17,24,39,0.5); border-radius: 10px; padding: 0.8rem; margin: 0.3rem 0;">
-                                <b>{med['name']}</b> - <span style="color:{stock_color};">Stock: {med['stock_quantity']}</span>
-                                <div style="font-size: 0.8rem; color:#9ca3af;">₹{med['unit_price']} per unit</div>
+                            <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 0.8rem; margin: 0.3rem 0; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                                <b style="color:#0f172a;">{med['name']}</b> - <span style="color:{stock_color}; font-weight:600;">Stock: {med['stock_quantity']}</span>
+                                <div style="font-size: 0.8rem; color:#475569;">₹{med['unit_price']} per unit</div>
                             </div>
                             """, unsafe_allow_html=True)
                         with col_action:
@@ -835,13 +819,13 @@ def render():
 
                     with col_info:
                         st.markdown(f"""
-                        <div style="font-size: 0.85rem; color: #9ca3af; line-height: 2.2;">
-                            <b style="color: #e2e8f0;">Email:</b> {p['email']}<br>
-                            <b style="color: #e2e8f0;">Gender:</b> {p.get('gender') or '—'}<br>
-                            <b style="color: #e2e8f0;">DOB:</b> {p.get('dob') or '—'}<br>
-                            <b style="color: #e2e8f0;">Phone:</b> {p.get('phone') or '—'}<br>
-                            <b style="color: #e2e8f0;">Joined:</b> {joined}<br>
-                            <b style="color: #e2e8f0;">Status:</b>
+                        <div style="font-size: 0.85rem; color: #475569; line-height: 2.2;">
+                            <b style="color: #0f172a;">Email:</b> {p['email']}<br>
+                            <b style="color: #0f172a;">Gender:</b> {p.get('gender') or '—'}<br>
+                            <b style="color: #0f172a;">DOB:</b> {p.get('dob') or '—'}<br>
+                            <b style="color: #0f172a;">Phone:</b> {p.get('phone') or '—'}<br>
+                            <b style="color: #0f172a;">Joined:</b> {joined}<br>
+                            <b style="color: #0f172a;">Status:</b>
                             <span style="color: {status_col}; font-weight: 700;"> ● {status_lbl}</span>
                         </div>
                         """, unsafe_allow_html=True)
@@ -866,19 +850,19 @@ def render():
                             st.markdown("**📋 Health Records:**")
                             for r in pat_recs[:5]:
                                 st.markdown(f"""
-                                <div style="background: linear-gradient(135deg, rgba(10,22,40,0.65), rgba(15,30,60,0.55));
-                                            border: 1px solid rgba(14,165,233,0.15);
+                                <div style="background: #ffffff;
+                                            border: 1.5px solid #e2e8f0;
                                             border-radius: 10px; padding: 0.7rem 1rem; margin-bottom: 8px;
-                                            font-size: 0.82rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
-                                    <b style="color: #0ea5e9;">{str(r['recorded_at'])[:10]}</b>
+                                            font-size: 0.85rem; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                                    <b style="color: #0369a1;">{str(r['recorded_at'])[:10]}</b>
                                     &nbsp;·&nbsp;Dr. {r['doctor_name'] or 'N/A'}
-                                    {"  ·  Dx: " + (r['diagnosis'] or '') if r['diagnosis'] else ''}<br>
-                                    <span style="color: #9ca3af;">
+                                    {"  ·  <span style='color:#0f172a;font-weight:600;'>Dx: " + (r['diagnosis'] or '') + "</span>" if r['diagnosis'] else ''}<br>
+                                    <span style="color: #475569;">
                                         ❤️ {r['heart_rate'] or '—'} bpm &nbsp;|&nbsp;
                                         🩸 {r['blood_pressure'] or '—'} &nbsp;|&nbsp;
                                         💨 SpO₂ {r['pulse_oximetry'] or '—'}%
                                     </span>
-                                    {f'<br><span style="color: #6b7280;">{r["notes"]}</span>' if r['notes'] else ''}
+                                    {f'<br><span style="color: #64748b;">{r["notes"]}</span>' if r['notes'] else ''}
                                 </div>
                                 """, unsafe_allow_html=True)
                             if len(pat_recs) > 5:
@@ -983,29 +967,29 @@ def render():
 
                 with st.container():
                     st.markdown(f"""
-                    <div style="background: rgba(17,24,39,0.5); border: 1px solid rgba(14,165,233,0.2);
-                                border-radius: 12px; padding: 1rem; margin: 0.5rem 0;">
+                    <div style="background: #ffffff; border: 1.5px solid #e2e8f0;
+                                border-radius: 12px; padding: 1rem; margin: 0.5rem 0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <b style="color:#0ea5e9; font-size: 1.1rem;">Order #{order['id']}</b>
-                                <span style="color:#9ca3af; margin-left: 15px;">{order['medicine_name']}</span>
-                                <span style="color:#6b7280; margin-left: 10px;">({order['category']})</span>
+                                <b style="color:#0369a1; font-size: 1.1rem;">Order #{order['id']}</b>
+                                <span style="color:#0f172a; font-weight:600; margin-left: 15px;">{order['medicine_name']}</span>
+                                <span style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; padding:2px 8px; border-radius:12px; font-size:0.75rem; font-weight:600; margin-left: 10px;">{order['category']}</span>
                             </div>
                             <div style="text-align: right;">
-                                <div style="color: {status_color}; font-weight: bold; text-transform: uppercase;">{order['status']}</div>
-                                <div style="color:#9ca3af; font-size: 0.85rem;">₹{order['total_price']}</div>
+                                <div style="color: {status_color}; font-weight: 700; text-transform: uppercase; font-size: 0.85rem;">{order['status']}</div>
+                                <div style="color:#0f172a; font-weight:700; font-size: 1rem;">₹{order['total_price']}</div>
                             </div>
                         </div>
-                        <div style="font-size: 0.85rem; color:#9ca3af; margin-top: 5px;">
-                            <b>Patient:</b> {order['patient_name']} | {order['patient_email']} | {order['patient_phone']}
+                        <div style="font-size: 0.85rem; color:#475569; margin-top: 6px;">
+                            <b style="color:#0f172a;">Patient:</b> {order['patient_name']} | {order['patient_email']} | {order['patient_phone']}
                         </div>
-                        <div style="font-size: 0.85rem; color:#9ca3af; margin-top: 3px;">
-                            <b>Qty:</b> {order['quantity']} x ₹{order['unit_price']} | <b>Ordered:</b> {order['order_date']}
+                        <div style="font-size: 0.85rem; color:#475569; margin-top: 3px;">
+                            <b style="color:#0f172a;">Qty:</b> {order['quantity']} x ₹{order['unit_price']} | <b>Ordered:</b> {order['order_date']}
                         </div>
-                        <div style="font-size: 0.8rem; color:#9ca3af; margin-top: 3px;">
+                        <div style="font-size: 0.82rem; color:#334155; margin-top: 3px;">
                             📍 {order['delivery_address']}
                         </div>
-                        {f"<div style='font-size:0.8rem;color:#ef4444;margin-top:3px;'>📝 {order['notes']}</div>" if order.get('notes') else ""}
+                        {f"<div style='font-size:0.8rem;color:#dc2626;margin-top:3px;'>📝 {order['notes']}</div>" if order.get('notes') else ""}
                     </div>
                     """, unsafe_allow_html=True)
 

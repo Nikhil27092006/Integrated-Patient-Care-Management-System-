@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 import db
 from datetime import time, timedelta, datetime as dt
 from pages.shared_styles import (inject_css, sidebar_header, page_header,
-                                  stat_cards, status_badge, sidebar_footer)
+                                  stat_cards, status_badge, sidebar_footer, medical_banner)
 import ai_care
 
 # PDF generation imports - check local packages first
@@ -459,31 +459,31 @@ def _weekly_calendar(appts: list, week_start):
     cols = st.columns(6)
     for i, (d, col) in enumerate(zip(days, cols)):
         is_today = (d == today)
-        hdr_col  = "#0ea5e9" if is_today else "#6b7280"
-        border   = "rgba(14,165,233,0.55)" if is_today else "rgba(14,165,233,0.1)"
-        bg       = "rgba(14,165,233,0.07)" if is_today else "rgba(10,22,40,0.5)"
+        hdr_col  = "#0369a1" if is_today else "#64748b"
+        border   = "#7dd3fc" if is_today else "#e2e8f0"
+        bg       = "#f0f9ff" if is_today else "#ffffff"
 
         events = ""
         for a in cal[str(d)]:
-            s_color = {"confirmed":"#14b8a6","pending":"#f59e0b",
-                       "completed":"#10b981","cancelled":"#ef4444"}.get(
-                           a.get("status","pending"), "#9ca3af")
+            s_color = {"confirmed":"#059669","pending":"#d97706",
+                       "completed":"#0369a1","cancelled":"#dc2626"}.get(
+                           a.get("status","pending"), "#64748b")
             events += f"""
-            <div class="cal-event" style="border-left-color: {s_color};">
-                <b>{str(a['start_time'])[:5]}</b> {a['doctor_name']}<br>
-                <span style="opacity:0.75">{a.get('reason','') or ''}</span>
+            <div class="cal-event" style="border-left-color: {s_color}; background:#ffffff; color:#0f172a; border: 1px solid #e2e8f0; border-left: 4px solid {s_color};">
+                <b style="color:#0f172a;">{str(a['start_time'])[:5]}</b> <span style="color:#0f172a;">{a['doctor_name']}</span><br>
+                <span style="color:#64748b;">{a.get('reason','') or ''}</span>
             </div>"""
 
         with col:
             st.markdown(f"""
-            <div style="background:{bg};border:1px solid {border};border-radius:14px;
-                        padding:0.7rem 0.6rem;min-height:140px;">
+            <div style="background:{bg};border:1.5px solid {border};border-radius:12px;
+                        padding:0.7rem 0.6rem;min-height:140px;box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
                 <div style="font-size:0.7rem;font-weight:700;color:{hdr_col};
                             text-transform:uppercase;margin-bottom:3px;">{day_names[i]}</div>
-                <div style="font-size:0.9rem;font-weight:600;color:#e2e8f0;margin-bottom:8px;">
-                    {d.strftime('%d')} <span style="font-size:0.65rem;color:#4b6080;">{d.strftime('%b')}</span>
+                <div style="font-size:0.9rem;font-weight:700;color:#0f172a;margin-bottom:8px;">
+                    {d.strftime('%d')} <span style="font-size:0.65rem;color:#64748b;">{d.strftime('%b')}</span>
                 </div>
-                {events or '<div style="font-size:0.65rem;color:#374151;margin-top:4px;">—</div>'}
+                {events or '<div style="font-size:0.7rem;color:#94a3b8;margin-top:4px;">—</div>'}
             </div>
             """, unsafe_allow_html=True)
 
@@ -633,22 +633,7 @@ def render():
     # ════════════════════════════════════════════════════════════════════
     if page == "health":
         # Animated medical elements header
-        st.markdown("""
-        <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 10px; flex-wrap: wrap;">
-            <span class="heart-pulse" style="font-size: 2rem;"></span>
-            <span class="medical-cross" style="font-size: 1.8rem;">➕</span>
-            <span class="dna-animation" style="font-size: 1.5rem;">
-                <span></span><span></span><span></span><span></span><span></span>
-                <span></span><span></span><span></span>
-            </span>
-            <span class="hospital-glow" style="font-size: 1.8rem;">🏥</span>
-            <span class="first-aid" style="font-size: 1.8rem;">🏥</span>
-            <span class="medical-kit" style="font-size: 1.8rem;">💼</span>
-        </div>
-        <style>
-        .heart-pulse::before { font-size: 2rem !important; }
-        </style>
-        """, unsafe_allow_html=True)
+        medical_banner("Patient")
 
         page_header(f"My Health Dashboard", f"Personal overview for {user['name']} (Patient ID: #{user['id']})")
 
@@ -671,15 +656,15 @@ def render():
         if confirmed_appts:
             next_c = sorted(confirmed_appts, key=lambda a: str(a["scheduled_date"]))[0]
             st.markdown(f"""
-            <div style="background: linear-gradient(135deg, rgba(20,184,166,0.15), rgba(14,165,233,0.1));
-                        border: 1px solid rgba(20,184,166,0.35);
+            <div style="background: #f0fdf4;
+                        border: 1.5px solid #a7f3d0;
                         border-radius: 14px; padding: 1rem 1.4rem; margin: 1rem 0;
-                        box-shadow: 0 4px 16px rgba(20,184,166,0.2); animation: fadeSlideUp 0.5s ease;">
+                        box-shadow: 0 2px 10px rgba(5,150,105,0.08); animation: fadeSlideUp 0.5s ease;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <span style="font-size: 1.6rem; animation: heartbeat 1.5s ease-in-out infinite;">📅</span>
                     <div>
-                        <b style="color:#14b8a6; font-size: 0.95rem;">Upcoming Confirmed Appointment</b>
-                        <div style="font-size: 0.85rem; color: #9ca3af; margin-top: 4px;">
+                        <b style="color:#059669; font-size: 0.95rem;">Upcoming Confirmed Appointment</b>
+                        <div style="font-size: 0.85rem; color: #334155; margin-top: 4px;">
                             Dr. {next_c['doctor_name']} · {next_c['scheduled_date']} @ {str(next_c['start_time'])[:5]}
                             — {next_c['reason'] or ''}
                         </div>
@@ -696,11 +681,11 @@ def render():
                 status = a["status"] or "pending"
                 icon = {"confirmed": "✅", "pending": "⏳", "completed": "✔️"}.get(status, "📅")
                 st.markdown(f"""
-                <div style="background: rgba(17,24,39,0.5); border: 1px solid rgba(14,165,233,0.2);
-                            border-radius: 10px; padding: 0.8rem 1rem; margin: 0.4rem 0;">
+                <div style="background: #ffffff; border: 1.5px solid #e2e8f0;
+                            border-radius: 10px; padding: 0.8rem 1rem; margin: 0.4rem 0; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
                     <span style="margin-right: 8px;">{icon}</span>
-                    <b>{a['scheduled_date']}</b> at {str(a['start_time'])[:5]} —
-                    Dr. {a['doctor_name']} <span style="color:#9ca3af">({status})</span>
+                    <b style="color:#0f172a;">{a['scheduled_date']}</b> <span style="color:#334155;">at {str(a['start_time'])[:5]} —</span>
+                    <span style="color:#0f172a; font-weight:600;">Dr. {a['doctor_name']}</span> <span style="color:#64748b;">({status})</span>
                 </div>
                 """, unsafe_allow_html=True)
             if len(upcoming) > 3:
@@ -814,20 +799,27 @@ def render():
                 filtered   = doctors if sp_choice == "All" else [d for d in doctors if d["specialty"] == sp_choice]
 
                 if filtered:
-                    doc_names   = {d["id"]: f"Dr. {d['full_name']} ({d['specialty'] or 'General'})" for d in filtered}
+                    def _fmt_doc_name(d):
+                        name = d['full_name']
+                        pfx = "" if name.startswith("Dr.") else "Dr. "
+                        return f"{pfx}{name} ({d['specialty'] or 'General'})"
+
+                    doc_names   = {d["id"]: _fmt_doc_name(d) for d in filtered}
                     selected_id = col_doc.selectbox("🩺 Doctor", list(doc_names.keys()),
                                                     format_func=lambda x: doc_names[x], key="bk_doc_tab")
                     selected_doc = next((d for d in filtered if d["id"] == selected_id), None)
 
                     if selected_doc:
+                        dname = selected_doc['full_name']
+                        doc_title = dname if dname.startswith("Dr.") else f"Dr. {dname}"
                         st.markdown(f"""
                         <div class="doc-card" style="margin-bottom:1rem;">
                             <div class="doc-card-specialty">{selected_doc['specialty'] or 'General'}</div>
-                            <div class="doc-card-name">Dr. {selected_doc['full_name']}</div>
+                            <div class="doc-card-name">{doc_title}</div>
                             <div class="doc-card-desc">{selected_doc['bio'] or 'Specialist'}</div>
-                            <div style="margin-top:0.5rem;display:flex;gap:1rem;font-size:0.8rem;color:#9ca3af;">
-                                <span style="display:flex;align-items:center;gap:4px;">💰 Fee: ₹{selected_doc['consultation_fee']}</span>
-                                <span style="display:flex;align-items:center;gap:4px;">🏆 Exp: {selected_doc['experience_years']} yrs</span>
+                            <div style="margin-top:0.5rem;display:flex;gap:1rem;font-size:0.85rem;color:#475569;">
+                                <span style="display:flex;align-items:center;gap:4px;">💰 <b style="color:#0f172a;">Fee: ₹{selected_doc['consultation_fee']}</b></span>
+                                <span style="display:flex;align-items:center;gap:4px;">🏆 <b style="color:#0f172a;">Exp: {selected_doc['experience_years']} yrs</b></span>
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -1084,31 +1076,7 @@ def render():
                             st.markdown('<div style="width:80px;height:80px;background:linear-gradient(135deg,#14b8a6,#0d9488);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;">💊</div>', unsafe_allow_html=True)
 
                     with col_info:
-                        st.markdown(f"""
-                        <div style="background: linear-gradient(135deg, rgba(20,184,166,0.1), rgba(14,165,233,0.08));
-                                    border: 1px solid rgba(20,184,166,0.3); border-radius: 14px; padding: 1.2rem; margin: 0.8rem 0;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div>
-                                    <b style="color:#14b8a6; font-size: 1.15rem;">{pres['medicine_name']}</b>
-                                    <span style="color:#9ca3af; margin-left: 8px;">{pres['medicine_dosage']}</span>
-                                </div>
-                                <span style="background: {status_color}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem;">
-                                    {pres['status'].upper()}
-                                </span>
-                            </div>
-                            <div style="margin-top: 10px; font-size: 0.9rem; color: #e2e8f0;">
-                                <div><b>👨‍⚕️ Prescribed by:</b> Dr. {pres['doctor_name']}</div>
-                                <div><b>💊 Dosage:</b> {pres['dosageInstructions']}</div>
-                                <div><b>⏰ Frequency:</b> {pres['frequency']}</div>
-                                <div><b>📅 Duration:</b> {pres['duration']}</div>
-                                <div><b>📦 Quantity:</b> {pres['quantity']} units</div>
-                                {f"<div><b>📝 Notes:</b> {pres['notes']}</div>" if pres.get('notes') else ''}
-                            </div>
-                            <div style="margin-top: 8px; font-size: 0.8rem; color: #6b7280;">
-                                Prescribed on: {str(pres['prescribed_at'])[:16]}
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        st.markdown(f'<div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 16px; border-left: 5px solid {status_color};"><div style="display: flex; justify-content: space-between; align-items: start; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;"><div><h4 style="margin:0; color:#0f172a; font-size:1.1rem; display:flex; align-items:center; gap:8px;">💊 {pres["medicine_name"]}</h4><span style="color:#475569; margin-left: 8px; font-weight:500;">{pres["medicine_dosage"]}</span></div><span style="background: {status_color}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700;">{pres["status"].upper()}</span></div><div style="margin-top: 10px; font-size: 0.9rem; color: #0f172a; line-height: 1.7;"><div><b style="color:#0369a1;">👨‍⚕️ Prescribed by:</b> Dr. {pres["doctor_name"]}</div><div><b style="color:#0f172a;">💊 Dosage:</b> {pres["dosageInstructions"]}</div><div><b style="color:#0f172a;">⏰ Frequency:</b> {pres["frequency"]}</div><div><b style="color:#0f172a;">📅 Duration:</b> {pres["duration"]}</div><div><b style="color:#0f172a;">📦 Quantity:</b> {pres["quantity"]} units</div>' + (f'<div><b style="color:#0f172a;">📝 Notes:</b> {pres["notes"]}</div>' if pres.get('notes') else '') + f'</div><div style="margin-top: 8px; font-size: 0.8rem; color: #64748b;">Prescribed on: {str(pres["prescribed_at"])[:16]}</div></div>', unsafe_allow_html=True)
             else:
                 st.info(f"No {status_filter} prescriptions found.")
 
@@ -1302,23 +1270,24 @@ def render():
 
                 with st.container():
                     st.markdown(f"""
-                    <div style="background: rgba(17,24,39,0.5); border: 1px solid rgba(14,165,233,0.2);
-                                border-radius: 12px; padding: 1rem; margin: 0.5rem 0;">
+                    <div style="background: #ffffff; border: 1.5px solid #e2e8f0;
+                                border-radius: 14px; padding: 1.2rem; margin: 0.8rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.04);">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <b style="color:#0ea5e9; font-size: 1.1rem;">{order['medicine_name']}</b>
-                                <span style="color:#9ca3af; margin-left: 10px;">{order['category']}</span>
+                                <b style="color:#0369a1; font-size: 1.15rem;">{order['medicine_name']}</b>
+                                <span style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; margin-left: 10px;">{order['category']}</span>
                             </div>
                             <div style="text-align: right;">
-                                <div style="color: {status_color}; font-weight: bold; text-transform: uppercase;">{order['status']}</div>
-                                <div style="color:#9ca3af; font-size: 0.85rem;">₹{order['total_price']}</div>
+                                <div style="color: {status_color}; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.05em;">{order['status']}</div>
+                                <div style="color:#0f172a; font-weight: 700; font-size: 1.05rem; margin-top: 2px;">₹{order['total_price']}</div>
                             </div>
                         </div>
-                        <div style="font-size: 0.85rem; color:#9ca3af; margin-top: 5px;">
-                            Qty: {order['quantity']} x ₹{order['unit_price']} | Ordered: {order['order_date']}
+                        <div style="font-size: 0.88rem; color:#475569; margin-top: 10px; line-height: 1.6;">
+                            <span style="font-weight: 600; color:#0f172a;">Qty: {order['quantity']} x ₹{order['unit_price']}</span> · <span style="color:#64748b;">Ordered: {order['order_date']}</span>
                         </div>
-                        <div style="font-size: 0.8rem; color:#9ca3af; margin-top: 3px;">
-                            📍 {order['delivery_address']} | 📞 {order['contact_phone']}
+                        <div style="font-size: 0.85rem; color:#334155; margin-top: 6px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+                            <span>📍 <span style="color:#0f172a;">{order['delivery_address']}</span></span>
+                            <span>📞 <span style="color:#0f172a;">{order['contact_phone']}</span></span>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)

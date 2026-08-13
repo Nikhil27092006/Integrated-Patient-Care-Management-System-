@@ -8,7 +8,71 @@ import pandas as pd
 from datetime import date, timedelta
 from pages.shared_styles import (inject_css, sidebar_header, page_header,
                                   stat_cards, status_badge, PLOTLY_LAYOUT, sidebar_footer, medical_banner)
-import ai_care
+import email_service
+
+def _render_doctor_creation_result(res: dict):
+    if not res:
+        return
+    doc_name   = res.get("name", "")
+    doc_email  = res.get("email", "")
+    doc_pass   = res.get("password", "")
+    doc_sp     = res.get("specialty", "General Medicine")
+    doc_exp    = res.get("experience", 0)
+    doc_fee    = res.get("fee", 0.0)
+    email_ok   = res.get("email_ok", False)
+    email_msg  = res.get("email_msg", "")
+    login_url  = os.getenv("APP_LOGIN_URL", "http://localhost:8501")
+
+    col_banner, col_dismiss = st.columns([6, 1])
+
+    with col_banner:
+        if email_ok:
+            st.success("🎉 **Doctor Account Created & Email Sent Successfully!**")
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(20,184,166,0.12));
+                        border: 1.5px solid #10b981; border-radius: 14px; padding: 1.2rem 1.5rem; margin-bottom: 1.2rem;">
+                <div style="font-size: 1.05rem; font-weight: 700; color: #047857; margin-bottom: 6px;">
+                    ✅ Doctor Account Created & Credentials Emailed!
+                </div>
+                <div style="font-size: 0.88rem; color: #065f46; margin-bottom: 12px;">
+                    📧 <b>Email Status:</b> {email_msg}
+                </div>
+                <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.9rem 1.1rem; color: #0f172a; font-size: 0.88rem; line-height: 1.8;">
+                    👨‍⚕️ <b>Doctor Name:</b> Dr. {doc_name}<br>
+                    📧 <b>Email / Username:</b> <code>{doc_email}</code><br>
+                    🔑 <b>Temporary Password:</b> <code>{doc_pass}</code><br>
+                    🩺 <b>Specialty:</b> {doc_sp} ({doc_exp} yrs exp, ₹{doc_fee:.0f} fee)<br>
+                    🌐 <b>Login URL:</b> <a href="{login_url}" target="_blank" style="color:#0284c7; font-weight:600;">{login_url}</a>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.warning("⚠️ **Doctor Account Created, but Email Delivery Needs Attention**")
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(239,68,68,0.08));
+                        border: 1.5px solid #f59e0b; border-radius: 14px; padding: 1.2rem 1.5rem; margin-bottom: 1.2rem;">
+                <div style="font-size: 1.05rem; font-weight: 700; color: #d97706; margin-bottom: 6px;">
+                    ⚠️ Account Created - Email Notice
+                </div>
+                <div style="font-size: 0.88rem; color: #92400e; margin-bottom: 12px;">
+                    <b>Reason:</b> {email_msg}<br>
+                    Please share the login credentials below manually with the doctor.
+                </div>
+                <div style="background: #ffffff; border: 1px solid #fde68a; border-radius: 10px; padding: 0.9rem 1.1rem; color: #0f172a; font-size: 0.88rem; line-height: 1.8;">
+                    👨‍⚕️ <b>Doctor Name:</b> Dr. {doc_name}<br>
+                    📧 <b>Email / Username:</b> <code>{doc_email}</code><br>
+                    🔑 <b>Temporary Password:</b> <code>{doc_pass}</code><br>
+                    🩺 <b>Specialty:</b> {doc_sp}<br>
+                    🌐 <b>Login URL:</b> <a href="{login_url}" target="_blank" style="color:#0284c7; font-weight:600;">{login_url}</a>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    with col_dismiss:
+        if st.button("✖ Dismiss", key=f"clear_doc_msg_{hash(doc_email)}", use_container_width=True):
+            if "last_created_doctor_result" in st.session_state:
+                del st.session_state["last_created_doctor_result"]
+            st.rerun()
 
 def render():
     inject_css()
@@ -20,13 +84,13 @@ def render():
     # Sidebar pages
     PAGES = {
         "🛡️  Admin Console":    "console",
+        "🤖  AI Care":           "ai_care",
         "👨‍⚕️  Manage Doctors":  "manage_doctors",
         "👥  Patients":          "patients",
         "➕  Doctors":           "doctors",
         "📅  Appointments":      "appointments",
         "💊  Medicines":        "medicines",
         "📦  Orders":           "orders",
-        "🤖  AI Care":           "ai_care",
     }
     if "admin_page" not in st.session_state:
         st.session_state.admin_page = "console"
@@ -159,6 +223,9 @@ def render():
 
         # ── Create doctor ─────────────────────────────────────────────
         with tab_create:
+            if "last_created_doctor_result" in st.session_state:
+                _render_doctor_creation_result(st.session_state["last_created_doctor_result"])
+
             st.markdown("""
             <div style="background: linear-gradient(135deg, rgba(14,165,233,0.1), rgba(20,184,166,0.08));
                         border: 1px solid rgba(14,165,233,0.2);
@@ -166,6 +233,7 @@ def render():
                         font-size: 0.9rem; color: #9ca3af;">
                 <div style="font-weight: 700; color: #0ea5e9; margin-bottom: 5px;">👨‍⚕️ Create Doctor Login</div>
                 Create a login for a new doctor. Only admins can perform this action.
+                Upon successful creation, login credentials will be <strong style="color:#14b8a6;">automatically emailed</strong> to the doctor.
             </div>
             """, unsafe_allow_html=True)
 
@@ -182,23 +250,50 @@ def render():
                 doc_fee   = c2.number_input("Consultation fee", min_value=0, max_value=10000, value=100)
                 doc_bio   = st.text_area("Short bio", placeholder="Brief description of expertise…")
 
-                if st.form_submit_button("Create doctor account", type="primary"):
-                    if not doc_name or not doc_email or not doc_pass:
-                        st.warning("Name, email and password are required.")
+                submitted = st.form_submit_button("Create doctor account & Send Credentials Email 📧", type="primary")
+
+            if submitted:
+                if not doc_name or not doc_email or not doc_pass:
+                    st.warning("Name, email and password are required.")
+                else:
+                    import auth as auth_mod
+                    ok, msg = auth_mod.register_user(doc_email, doc_pass, doc_name, "Doctor")
+                    if ok:
+                        new_user = auth_mod.get_user_by_email(doc_email)
+                        if new_user:
+                            sp_map = {s["name"]: s["id"] for s in specialties}
+                            sp_id  = sp_map.get(doc_sp)
+                            db.update_doctor_profile(new_user["id"], doc_bio, int(doc_exp), float(doc_fee), sp_id)
+
+                        login_url  = os.getenv("APP_LOGIN_URL", "http://localhost:8501")
+                        admin_name = user.get("name", "Admin")
+
+                        email_ok, email_msg = email_service.send_doctor_credentials_email(
+                            doctor_email=doc_email,
+                            doctor_name=doc_name,
+                            temp_password=doc_pass,
+                            specialty=doc_sp,
+                            experience=int(doc_exp),
+                            fee=float(doc_fee),
+                            bio=doc_bio or "",
+                            login_url=login_url,
+                            admin_name=admin_name,
+                        )
+
+                        st.session_state["last_created_doctor_result"] = {
+                            "name": doc_name,
+                            "email": doc_email,
+                            "password": doc_pass,
+                            "specialty": doc_sp,
+                            "experience": int(doc_exp),
+                            "fee": float(doc_fee),
+                            "email_ok": email_ok,
+                            "email_msg": email_msg,
+                        }
+                        st.balloons()
+                        st.rerun()
                     else:
-                        import auth as auth_mod
-                        ok, msg = auth_mod.register_user(doc_email, doc_pass, doc_name, "Doctor")
-                        if ok:
-                            # Get the new user ID and create doctor profile
-                            new_user = auth_mod.get_user_by_email(doc_email)
-                            if new_user:
-                                sp_map = {s["name"]: s["id"] for s in specialties}
-                                sp_id  = sp_map.get(doc_sp)
-                                db.update_doctor_profile(new_user["id"], doc_bio, int(doc_exp), float(doc_fee), sp_id)
-                            st.success(f"✅ Doctor account created for {doc_name}!")
-                            st.rerun()
-                        else:
-                            st.error(msg)
+                        st.error(msg)
 
         # ── Availability ──────────────────────────────────────────────
         with tab_avail:
@@ -563,6 +658,9 @@ def render():
         import auth as auth_mod
         page_header("Manage Doctors", "Create, view and manage all doctor accounts")
 
+        if "last_created_doctor_result" in st.session_state:
+            _render_doctor_creation_result(st.session_state["last_created_doctor_result"])
+
         tab_add, tab_all = st.tabs(["➕  Add Doctor Login", "📋  All Doctor Accounts"])
 
         # ── Tab 1: Add Doctor Login ───────────────────────────────────
@@ -577,7 +675,7 @@ def render():
                 </div>
                 <div style="font-size: 0.85rem; color: #9ca3af;">
                     Fill in the form below to create a new doctor account.
-                    The doctor can log in immediately with the email and password you set.
+                    Login credentials will be automatically emailed to the doctor.
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -599,7 +697,7 @@ def render():
                     placeholder="Brief description of expertise, qualifications and approach…",
                     height=90)
 
-                submitted = st.form_submit_button("✅ Create Doctor Account", type="primary", use_container_width=True)
+                submitted = st.form_submit_button("✅ Create Doctor Account & Send Credentials Email 📧", type="primary", use_container_width=True)
 
             if submitted:
                 if not doc_name or not doc_email or not doc_pass:
@@ -616,7 +714,32 @@ def render():
                             sp_map = {s["name"]: s["id"] for s in specialties}
                             sp_id  = sp_map.get(doc_sp)
                             db.update_doctor_profile(new_user["id"], doc_bio, int(doc_exp), float(doc_fee), sp_id)
-                        st.success(f"✅ Doctor account created for **{doc_name}** ({doc_email})!")
+
+                        login_url  = os.getenv("APP_LOGIN_URL", "http://localhost:8501")
+                        admin_name = user.get("name", "Admin")
+
+                        email_ok, email_msg = email_service.send_doctor_credentials_email(
+                            doctor_email=doc_email,
+                            doctor_name=doc_name,
+                            temp_password=doc_pass,
+                            specialty=doc_sp,
+                            experience=int(doc_exp),
+                            fee=float(doc_fee),
+                            bio=doc_bio or "",
+                            login_url=login_url,
+                            admin_name=admin_name,
+                        )
+
+                        st.session_state["last_created_doctor_result"] = {
+                            "name": doc_name,
+                            "email": doc_email,
+                            "password": doc_pass,
+                            "specialty": doc_sp,
+                            "experience": int(doc_exp),
+                            "fee": float(doc_fee),
+                            "email_ok": email_ok,
+                            "email_msg": email_msg,
+                        }
                         st.balloons()
                         st.rerun()
                     else:
@@ -624,6 +747,10 @@ def render():
 
         # ── Tab 2: All Doctor Accounts ────────────────────────────────
         with tab_all:
+            if "doctor_deleted_msg" in st.session_state:
+                st.success(st.session_state["doctor_deleted_msg"])
+                del st.session_state["doctor_deleted_msg"]
+
             doctors = db.fetch_all_doctors()
 
             if not doctors:
@@ -670,13 +797,15 @@ def render():
                     joined      = str(doc.get("created_at", ""))[:10]
 
                     with st.expander(
-                        f"🩺 Dr. {doc['full_name']}  ·  {sp}  ·  {doc['email']}"
+                        f"🩺 Dr. {doc['full_name']}  ·  {sp}  ·  {doc['email']}  (ID: #{doc['id']})"
                     ):
                         col_info, col_actions = st.columns([3, 2])
 
                         with col_info:
                             st.markdown(f"""
                             <div style="font-size: 0.85rem; color: #9ca3af; line-height: 2.1;">
+                                <b style="color: #e2e8f0;">Doctor ID:</b> #{doc['id']}<br>
+                                <b style="color: #e2e8f0;">User ID:</b> #{doc['user_id']}<br>
                                 <b style="color: #e2e8f0;">Email:</b> {doc['email']}<br>
                                 <b style="color: #e2e8f0;">Specialty:</b> {sp}<br>
                                 <b style="color: #e2e8f0;">Experience:</b> {doc['experience_years'] or 0} yrs<br>
@@ -720,6 +849,31 @@ def render():
                                              type="primary"):
                                     auth_mod.toggle_user_active(doc["user_id"], True)
                                     st.success(f"Account for Dr. {doc['full_name']} activated.")
+                                    st.rerun()
+
+                            # Delete Doctor Account
+                            st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+                            confirm_del_key = f"confirm_del_doc_{doc['id']}"
+                            if confirm_del_key not in st.session_state:
+                                st.session_state[confirm_del_key] = False
+
+                            if not st.session_state[confirm_del_key]:
+                                if st.button("🗑️ Delete Doctor Account", key=f"btn_del_doc_{doc['id']}", use_container_width=True):
+                                    st.session_state[confirm_del_key] = True
+                                    st.rerun()
+                            else:
+                                st.error(f"⚠️ Confirm deletion of Dr. **{doc['full_name']}** (Doctor ID: #{doc['id']})?")
+                                c_del_yes, c_del_no = st.columns(2)
+                                if c_del_yes.button("🔥 Yes, Delete", key=f"yes_del_doc_{doc['id']}", type="primary", use_container_width=True):
+                                    ok_del, msg_del = db.delete_doctor(doc['id'])
+                                    if ok_del:
+                                        st.session_state["doctor_deleted_msg"] = f"✅ Dr. {doc['full_name']} (Doctor ID #{doc['id']}) deleted successfully."
+                                        st.session_state[confirm_del_key] = False
+                                        st.rerun()
+                                    else:
+                                        st.error(msg_del)
+                                if c_del_no.button("Cancel", key=f"no_del_doc_{doc['id']}", use_container_width=True):
+                                    st.session_state[confirm_del_key] = False
                                     st.rerun()
 
     # ════════════════════════════════════════════════════════════════════

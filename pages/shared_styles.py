@@ -5,6 +5,11 @@ Fixes all visibility issues: role buttons, sidebar text, badges, prescription te
 import streamlit as st
 import base64
 import os
+import sys
+# Allow importing from project root even when this module lives in pages/
+_project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
 
 @st.cache_data
 def _get_bg_image_b64() -> str:
@@ -1326,6 +1331,14 @@ def inject_css():
         }
         </style>
         """, unsafe_allow_html=True)
+
+    # ── Inject floating voice chatbot (authenticated users only) ──────────────
+    if st.session_state.get("authenticated", False):
+        try:
+            from voice_chatbot import inject_voice_chatbot
+            inject_voice_chatbot()
+        except Exception:
+            pass  # Silently skip if voice_chatbot module not found
 
 
 # ── Sidebar logo & user info block ───────────────────────────────────────────

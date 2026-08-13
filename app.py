@@ -3,6 +3,9 @@ import auth
 import db as db_module
 import base64
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 @st.cache_data
 def _get_bg_image_b64() -> str:
@@ -691,7 +694,7 @@ else:
     st.markdown('<div class="auth-card">', unsafe_allow_html=True)
     
     # Segmented Control / Tabs
-    tab_login, tab_signup = st.tabs(["🔒 Secure Login", "📝 Create Account"])
+    tab_login, tab_signup, tab_chatbot = st.tabs(["🔒 Secure Login", "📝 Create Account", "🤖 AI Chatbot"])
     
     with tab_login:
         st.markdown("<p class='role-selector-label'>SELECT PORTAL ROLE</p>", unsafe_allow_html=True)
@@ -817,6 +820,10 @@ else:
                     st.success("Registration successful! You can now log in.")
                 else:
                     st.error(msg)
+
+    with tab_chatbot:
+        import chatbot
+        chatbot.render_public_chatbot()
                     
     # Divider for OAuth
     st.markdown('<div class="divider">or continue with</div>', unsafe_allow_html=True)

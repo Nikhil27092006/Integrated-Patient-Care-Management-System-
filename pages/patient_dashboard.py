@@ -565,12 +565,12 @@ def render():
 
     PAGES = {
         "My Health":      "health",
+        "AI Assistant":   "chat",
         "Appointments":   "appointments",
         "My Medicines":   "medicines",
         "Find Doctors":   "doctors",
         "Shop Medicines": "shop",
         "My Orders":      "orders",
-        "AI Assistant":   "chat",
     }
     if "patient_page" not in st.session_state:
         st.session_state.patient_page = "health"

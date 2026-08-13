@@ -60,7 +60,7 @@ def _get_groq_llm():
 
         llm = ChatGroq(
 
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
 
             temperature=0.3,
 
@@ -88,7 +88,7 @@ def _get_groq_llm():
 
                 llm = ChatGroq(
 
-                    model="llama3-8b-8192",
+                    model="llama-3.1-8b-instant",
 
                     temperature=0.3,
 
@@ -287,6 +287,199 @@ def analyze_medicine_image(image_bytes: bytes, image_type: str = "image/jpeg") -
         return "⚠️ `groq` package not installed. Run: `pip install groq`"
     except Exception as e:
         return f"⚠️ Medicine image analysis failed: {str(e)}\n\nPlease ensure the image is clear and shows the medicine label/packaging."
+
+
+
+def analyze_document_ocr(file_bytes: bytes, file_name: str, file_type: str) -> str:
+    """
+    OCR AI Assistant — Extracts and analyses text/content from uploaded images or PDFs.
+
+    - Images (jpg, png, webp, bmp): Sent directly to Groq vision model for OCR text extraction + analysis.
+    - PDFs: Text layers extracted via pdfplumber; embedded images sent to Groq vision OCR.
+    Returns a full structured analysis of all extracted content.
+    """
+    import base64, re
+
+    api_key = os.getenv("GROQ_API_KEY", "")
+    if not api_key:
+        return "⚠️ GROQ_API_KEY not configured. Cannot perform OCR analysis."
+
+    try:
+        from groq import Groq
+        client = Groq(api_key=api_key)
+    except ImportError:
+        return "⚠️ `groq` package not installed. Run: `pip install groq`"
+
+    def _call_vision_ocr(img_bytes: bytes, img_mime: str, context_hint: str = "") -> str:
+        """Send image bytes to Groq vision model and return OCR + analysis text."""
+        img_b64 = base64.b64encode(img_bytes).decode("utf-8")
+        data_url = f"data:{img_mime};base64,{img_b64}"
+        ocr_prompt = (
+            "You are an expert OCR (Optical Character Recognition) and document analysis AI. "
+            f"{context_hint}"
+            "Your task:\n"
+            "1. 📝 **Extract ALL text** visible in this image with full accuracy (including handwritten notes, printed text, tables, labels, stamps).\n"
+            "2. 📋 **Summarize** what this document/image is about.\n"
+            "3. 🏥 **Medical Relevance** (if applicable): Identify any medical terms, diagnoses, prescriptions, lab values, or clinical notes.\n"
+            "4. ⚠️ **Key Findings**: Highlight any critical or important information detected.\n"
+            "5. 📊 **Structured Data** (if applicable): Extract any tables, measurements, dosages, or numerical values in a structured format.\n\n"
+            "Format your response clearly with headers and bullet points. "
+            "If no readable text is found, describe what is visually present in the image."
+        )
+        vision_models = ["qwen/qwen3.6-27b"]
+        try:
+            available = [m.id for m in client.models.list().data]
+            for m in available:
+                if m not in vision_models and any(k in m.lower() for k in ["qwen", "vision", "multimodal"]):
+                    vision_models.append(m)
+        except Exception:
+            pass
+
+        for v_model in vision_models:
+            try:
+                resp = client.chat.completions.create(
+                    model=v_model,
+                    messages=[{
+                        "role": "user",
+                        "content": [
+                            {"type": "image_url", "image_url": {"url": data_url}},
+                            {"type": "text", "text": ocr_prompt},
+                        ]
+                    }],
+                    max_tokens=2048,
+                )
+                text = resp.choices[0].message.content or ""
+                if text.strip():
+                    cleaned = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+                    return cleaned if cleaned else text.strip()
+            except Exception:
+                continue
+        return "⚠️ Vision OCR failed for this image segment."
+
+    is_pdf = file_name.lower().endswith(".pdf") or file_type == "application/pdf"
+
+    # ── PDF Processing ──────────────────────────────────────────────────────────
+    if is_pdf:
+        sections = []
+        try:
+            import pdfplumber, io
+            with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+                total_pages = len(pdf.pages)
+                sections.append(f"📄 **PDF Document:** `{file_name}` — **{total_pages} page(s)**\n")
+                all_text_blocks = []
+                image_ocr_results = []
+
+                for page_num, page in enumerate(pdf.pages, 1):
+                    # Extract text layer
+                    page_text = page.extract_text()
+                    if page_text and page_text.strip():
+                        all_text_blocks.append(
+                            f"### 📄 Page {page_num} — Extracted Text\n```\n{page_text.strip()}\n```"
+                        )
+
+                    # Extract embedded images from page (limit to first 6 images total)
+                    if len(image_ocr_results) < 6:
+                        try:
+                            page_images = page.images
+                            for img_info in page_images:
+                                if len(image_ocr_results) >= 6:
+                                    break
+                                # Crop image region from page as a PIL image
+                                try:
+                                    bbox = (
+                                        img_info.get("x0", 0),
+                                        img_info.get("top", 0),
+                                        img_info.get("x1", 100),
+                                        img_info.get("bottom", 100),
+                                    )
+                                    cropped = page.crop(bbox).to_image(resolution=150)
+                                    img_buf = io.BytesIO()
+                                    cropped.save(img_buf, format="PNG")
+                                    img_bytes_chunk = img_buf.getvalue()
+                                    if img_bytes_chunk:
+                                        ocr_text = _call_vision_ocr(
+                                            img_bytes_chunk, "image/png",
+                                            f"This is an embedded image from page {page_num} of a PDF document. "
+                                        )
+                                        image_ocr_results.append(
+                                            f"### 🖼️ Embedded Image — Page {page_num}\n{ocr_text}"
+                                        )
+                                except Exception:
+                                    continue
+                        except Exception:
+                            pass
+
+                # Now send all extracted text to LLM for medical/contextual analysis
+                combined_text = "\n\n".join(all_text_blocks)
+
+                if combined_text.strip():
+                    # Use LLM to analyse the extracted PDF text
+                    try:
+                        from langchain_groq import ChatGroq
+                        llm = ChatGroq(model="llama-3.1-8b-instant", temperature=0.2, api_key=api_key)
+                        analysis_prompt = (
+                            f"You are a medical document analysis AI. "
+                            f"The following text was extracted from a PDF document named '{file_name}'.\n\n"
+                            f"{combined_text[:6000]}\n\n"
+                            "Please provide:\n"
+                            "1. 📋 **Document Summary**: What this document is about.\n"
+                            "2. 🏥 **Medical Information Detected**: Diagnoses, medications, lab results, clinical notes.\n"
+                            "3. ⚠️ **Important Findings**: Any critical values, alerts, or action items.\n"
+                            "4. 📊 **Key Data Points**: Dates, dosages, measurements, test results.\n"
+                            "5. 💡 **Recommendations**: What the patient/doctor should be aware of.\n\n"
+                            "If this is not a medical document, still provide a thorough analysis of its content."
+                        )
+                        from langchain_core.messages import HumanMessage
+                        ai_response = llm.invoke([HumanMessage(content=analysis_prompt)])
+                        analysis_text = ai_response.content if hasattr(ai_response, "content") else str(ai_response)
+                        sections.append(f"## 🤖 AI Analysis of Extracted Text\n\n{analysis_text}")
+                    except Exception as e:
+                        sections.append(f"*AI analysis unavailable: {e}*")
+
+                    sections.append("\n---\n## 📝 Raw Extracted Text (All Pages)\n")
+                    sections.extend(all_text_blocks)
+
+                else:
+                    sections.append(
+                        "ℹ️ **No text layer detected in this PDF.** "
+                        "This may be a scanned document. Attempting image-based OCR on embedded images..."
+                    )
+
+                if image_ocr_results:
+                    sections.append("\n---\n## 🖼️ Image OCR Results (Embedded Images)\n")
+                    sections.extend(image_ocr_results)
+                elif not combined_text.strip():
+                    # Try rendering the entire first page as image for OCR
+                    try:
+                        first_page_img = pdf.pages[0].to_image(resolution=200)
+                        img_buf = io.BytesIO()
+                        first_page_img.save(img_buf, format="PNG")
+                        full_page_ocr = _call_vision_ocr(
+                            img_buf.getvalue(), "image/png",
+                            "This is a full-page scan/render of a PDF page. Extract all text visible. "
+                        )
+                        sections.append(f"## 🖼️ Full-Page OCR (Page 1)\n\n{full_page_ocr}")
+                    except Exception as e:
+                        sections.append(f"⚠️ Full-page OCR also failed: {e}")
+
+        except ImportError:
+            return (
+                "⚠️ `pdfplumber` package not installed.\n\n"
+                "To enable PDF OCR, install it:\n```\npip install pdfplumber\n```"
+            )
+        except Exception as e:
+            return f"⚠️ PDF processing failed: {str(e)}"
+
+        return "\n\n".join(sections)
+
+    # ── Image Processing (direct OCR) ───────────────────────────────────────────
+    else:
+        context_hint = (
+            f"This is a medical or general document image named '{file_name}'. "
+            "It may contain handwritten notes, printed prescriptions, lab reports, "
+            "medical records, or any other document text. "
+        )
+        return _call_vision_ocr(file_bytes, file_type or "image/jpeg", context_hint)
 
 
 
@@ -754,7 +947,39 @@ def render_ai_care_tab(user_data: dict):
         unsafe_allow_html=True
     )
 
+    # ── Live Gemini Voice Assistant Console Option ───────────────────────────
+    st.markdown(
+        '<div style="'
+        'background: linear-gradient(135deg, rgba(14,165,233,0.12), rgba(20,184,166,0.12)); '
+        'border: 1.5px solid rgba(14,165,233,0.35); '
+        'border-radius: 16px; '
+        'padding: 1rem 1.4rem; '
+        'margin-bottom: 1rem; '
+        'display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">'
+        '<div style="display:flex; align-items:center; gap:12px;">'
+        '<span style="font-size: 2rem;">🎙️</span>'
+        '<div>'
+        '<div style="font-size: 1.05rem; font-weight: 800; color: #0284c7;">'
+        'Live Google Gemini Voice Assistant'
+        '</div>'
+        '<div style="font-size: 0.82rem; color: #0369a1; margin-top: 2px;">'
+        'Speak via microphone · 100% voice audio response output powered by Gemini AI'
+        '</div>'
+        '</div>'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    with st.expander("🎙️ Open Live Voice Assistant Console", expanded=True):
+        try:
+            from voice_chatbot import render_inline_voice_assistant
+            render_inline_voice_assistant(height=540)
+        except Exception as e:
+            st.error(f"Voice Assistant failed to load: {e}")
+
     # Session key for role-specific chat history
+
 
     history_key = f"ai_care_history_{role}_{user_data.get('id', 0)}"
 
@@ -992,6 +1217,112 @@ def render_ai_care_tab(user_data: dict):
                 st.session_state[input_counter_key] = st.session_state.get(input_counter_key, 0) + 1
 
                 st.rerun()
+
+    # ── OCR AI Assistant — Upload Image / PDF for Text Extraction & Analysis ──
+    # Available to ALL roles: patient, doctor, admin
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+
+    # Section header banner
+    st.markdown(
+        '<div style="'
+        'background: linear-gradient(135deg, rgba(16,185,129,0.10), rgba(6,182,212,0.10)); '
+        'border: 1.5px dashed rgba(16,185,129,0.45); '
+        'border-radius: 14px; '
+        'padding: 0.8rem 1.3rem; '
+        'margin-bottom: 0.7rem;">'
+        '<div style="display:flex; align-items:center; gap:10px;">'
+        '<span style="font-size:1.5rem;">🔍</span>'
+        '<div>'
+        '<div style="font-size:0.95rem; font-weight:700; color:#065f46;">'
+        'OCR AI Assistant — Extract & Analyse Text from Images or PDFs'
+        '</div>'
+        '<div style="font-size:0.78rem; color:#047857; margin-top:2px;">'
+        'Upload prescriptions, lab reports, medical certificates, scanned documents — AI reads &amp; analyses all text'
+        '</div>'
+        '</div>'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    ocr_uploader_key = f"ocr_doc_upload_{role}_{user_data.get('id', 0)}_{st.session_state[input_counter_key]}"
+
+    ocr_file = st.file_uploader(
+        "📂 Upload Image or PDF for OCR Analysis",
+        type=["jpg", "jpeg", "png", "webp", "bmp", "pdf"],
+        key=ocr_uploader_key,
+        label_visibility="collapsed",
+        help="Supported: JPG, PNG, WEBP, BMP (images) · PDF (documents). AI will extract all text and analyse content."
+    )
+
+    if ocr_file is not None:
+        is_pdf_file = ocr_file.name.lower().endswith(".pdf") or ocr_file.type == "application/pdf"
+        file_icon = "📄" if is_pdf_file else "🖼️"
+        file_label = "PDF Document" if is_pdf_file else "Image"
+
+        # Show preview / file info
+        ocr_col_info, ocr_col_btn = st.columns([3, 1])
+
+        with ocr_col_info:
+            if not is_pdf_file:
+                st.image(ocr_file, caption=f"{file_icon} Uploaded {file_label}: {ocr_file.name}", use_column_width=True)
+            else:
+                st.markdown(
+                    f'<div style="'
+                    'background: linear-gradient(135deg, rgba(239,68,68,0.07), rgba(245,158,11,0.07)); '
+                    'border: 1px solid rgba(239,68,68,0.25); border-radius: 12px; '
+                    'padding: 1rem 1.4rem; display:flex; align-items:center; gap:12px;">'
+                    f'<span style="font-size:2.5rem;">📄</span>'
+                    '<div>'
+                    f'<div style="font-weight:700; color:#7c3aed; font-size:0.95rem;">{ocr_file.name}</div>'
+                    f'<div style="color:#64748b; font-size:0.8rem; margin-top:3px;">'
+                    f'PDF · {ocr_file.size / 1024:.1f} KB · Ready for OCR Analysis'
+                    '</div>'
+                    '</div>'
+                    '</div>',
+                    unsafe_allow_html=True
+                )
+
+        with ocr_col_btn:
+            st.markdown('<div style="height: 30px;"></div>', unsafe_allow_html=True)
+            ocr_analyse_clicked = st.button(
+                "🔍 OCR Analyse",
+                key=f"ocr_analyse_btn_{role}_{user_data.get('id', 0)}",
+                type="primary",
+                use_container_width=True
+            )
+
+        if ocr_analyse_clicked:
+            ocr_bytes = ocr_file.getvalue()
+            ocr_mime = ocr_file.type or ("application/pdf" if is_pdf_file else "image/jpeg")
+
+            # Add user message to chat
+            st.session_state[history_key].append({
+                "role": "user",
+                "content": (
+                    f"{file_icon} **[{file_label} Uploaded for OCR]** — `{ocr_file.name}`\n\n"
+                    f"Please extract all text from this {file_label.lower()} and provide a comprehensive analysis."
+                )
+            })
+
+            spinner_msg = (
+                "📄 Extracting text from PDF and analysing with AI... Please wait..."
+                if is_pdf_file else
+                "🔍 Running OCR on image and analysing text with AI Vision... Please wait..."
+            )
+
+            with st.spinner(spinner_msg):
+                ocr_result = analyze_document_ocr(ocr_bytes, ocr_file.name, ocr_mime)
+
+            st.session_state[history_key].append({
+                "role": "assistant",
+                "content": f"## {file_icon} OCR Document Analysis — `{ocr_file.name}`\n\n{ocr_result}"
+            })
+
+            # Increment counter to reset the uploader
+            st.session_state[input_counter_key] = st.session_state.get(input_counter_key, 0) + 1
+
+            st.rerun()
 
     # ── Input bar: text field | Send button ─────────────
 

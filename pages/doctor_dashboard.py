@@ -59,12 +59,12 @@ def render():
 
     PAGES = {
         "Dashboard":     "home",
+        "🤖 AI Care":    "ai_care",
         "Appointments":  "appointments",
         "My Patients":   "patients",
         "Health Records": "records",
         "Prescribe":     "prescribe",
         "💊 Medicines":  "medicines",
-        "🤖 AI Care":    "ai_care",
         "My Profile":    "profile",
     }
     if "doctor_page" not in st.session_state:

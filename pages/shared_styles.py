@@ -1355,11 +1355,11 @@ def sidebar_header(role: str, name: str):
     icon   = cfg["icon"]
 
     logo_uri = _get_logo_b64()
-    logo_img_html = f'<img src="{logo_uri}" style="width:100%;height:100%;object-fit:contain;padding:3px;border-radius:10px;background:#ffffff;" alt="IPCMS Logo" />' if logo_uri else '🏥'
+    logo_img_html = f'<img src="{logo_uri}" style="width:100%;height:100%;object-fit:contain;padding:3px;border-radius:10px;background:#ffffff;" alt="PCMHS Logo" />' if logo_uri else '🏥'
 
     st.sidebar.markdown(f"""
     <div style="padding:1.4rem 1rem 0.9rem; border-bottom:1px solid #e2e8f0; background:#ffffff;">
-        <!-- IPCMS Logo row -->
+        <!-- PCMHS Logo row -->
         <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.1rem;">
             <div style="width:44px;height:44px;border-radius:12px;
                         background:#ffffff;
@@ -1369,9 +1369,9 @@ def sidebar_header(role: str, name: str):
                         box-shadow:0 4px 14px rgba(13,148,136,0.2);">{logo_img_html}</div>
             <div>
                 <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.15rem;
-                            font-weight:800;color:#0369a1;line-height:1.1;letter-spacing:0.01em;">IPCMS</div>
+                            font-weight:800;color:#0369a1;line-height:1.1;letter-spacing:0.01em;">PCMHS</div>
                 <div style="font-size:0.58rem;color:#64748b;font-weight:500;
-                            line-height:1.35;margin-top:2px;">Integrated Patient Care<br>Management System</div>
+                            line-height:1.35;margin-top:2px;">Patient Care Management<br>System for Healthcare Services</div>
             </div>
         </div>
         <!-- User info chip -->
@@ -1401,7 +1401,7 @@ def sidebar_header(role: str, name: str):
 
 
 # ── Page header ───────────────────────────────────────────────────────────────
-def page_header(title: str, subtitle: str, btn_label: str = "IPCMS"):
+def page_header(title: str, subtitle: str, btn_label: str = "PCMHS"):
     logo_uri = _get_logo_b64()
     logo_html = (
         f'<img src="{logo_uri}" style="width:28px;height:28px;object-fit:contain;border-radius:8px;background:#ffffff;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,0.15);" />'
@@ -1459,7 +1459,7 @@ def medical_banner(role: str = "Patient"):
                          padding:3px 12px;border-radius:20px;font-size:0.72rem;font-weight:700;
                          letter-spacing:0.04em;
                          box-shadow:0 2px 8px rgba(0,0,0,0.10);backdrop-filter:blur(4px);
-                         -webkit-backdrop-filter:blur(4px);">Integrated Patient Care Management System</span>
+                         -webkit-backdrop-filter:blur(4px);">Patient Care Management System for Healthcare Services</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -1563,7 +1563,7 @@ def sidebar_footer():
             HIPAA COMPLIANT
         </div>
         <div style="font-size:0.8rem;font-weight:700;color:#0f172a;margin-top:4px;">
-            Secure IPCMS Connection
+            Secure PCMHS Connection
         </div>
         <div style="font-size:0.7rem;color:#64748b;margin-top:3px;line-height:1.3;">
             End-to-end encrypted logs.

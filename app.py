@@ -42,7 +42,7 @@ except Exception:
 
 # Set page configuration with medical theme styling & custom logo favicon
 st.set_page_config(
-    page_title="IPCMS - Integrated Patient Care Management System",
+    page_title="PCMHS - Patient Care Management System for Healthcare Services",
     page_icon=_page_icon,
     layout="wide",
     initial_sidebar_state="expanded"
@@ -680,14 +680,14 @@ elif st.session_state.oauth_flow:
 else:
     # Login / Signup landing forms
     _logo_data = _get_logo_b64()
-    _logo_markup = f'<img src="{_logo_data}" class="med-logo-img" alt="IPCMS Logo" />' if _logo_data else '<span>🏥</span>'
+    _logo_markup = f'<img src="{_logo_data}" class="med-logo-img" alt="PCMHS Logo" />' if _logo_data else '<span>🏥</span>'
 
     st.markdown(f"""
     <div class="med-logo">
         {_logo_markup}
     </div>
     <div class="med-title">CareNet Platform</div>
-    <div class="med-subtitle">Integrated Patient Care Management System</div>
+    <div class="med-subtitle">Patient Care Management System for Healthcare Services</div>
     """, unsafe_allow_html=True)
 
     # Modern CSS styled login container

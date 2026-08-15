@@ -838,9 +838,9 @@ def process_ai_care_message(messages: list, user_data: dict) -> str:
 
         system_prompt = (
 
-            "You are SmartCare AI, an advanced medical AI assistant integrated into IPCMS "
+            "You are SmartCare AI, an advanced medical AI assistant integrated into PCMHS "
 
-            "(Integrated Patient Care Management System).\n"
+            "(Patient Care Management System for Healthcare Services).\n"
 
             f"Current User Info: Name={user_data.get('name')}, Role={role.upper()}.\n\n"
 

@@ -1,5 +1,5 @@
 """
-Email Service Module — IPCMS
+Email Service Module — PCMHS
 Sends professional HTML emails via Gmail SMTP (or any SMTP provider).
 Used to deliver doctor login credentials after admin creates a doctor account.
 """
@@ -23,7 +23,7 @@ def _get_smtp_config() -> dict:
         "port":      int(os.getenv("SMTP_PORT", "587")),
         "user":      os.getenv("SMTP_USER", "").strip(),
         "password":  os.getenv("SMTP_PASSWORD", "").strip(),
-        "from_name": os.getenv("SMTP_FROM_NAME", "IPCMS - Patient Care System").strip(),
+        "from_name": os.getenv("SMTP_FROM_NAME", "PCMHS - Patient Care Management System for Healthcare Services").strip(),
     }
 
 
@@ -54,7 +54,7 @@ def _build_doctor_welcome_html(
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Your Doctor Account — IPCMS</title>
+  <title>Your Doctor Account — PCMHS</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -126,7 +126,7 @@ def _build_doctor_welcome_html(
 <div class="wrapper">
   <div class="header">
     <span class="header-icon">&#x1F3E5;</span>
-    <h1>Welcome to IPCMS, Dr. {doctor_name}!</h1>
+    <h1>Welcome to PCMHS, Dr. {doctor_name}!</h1>
     <p>Your doctor account has been successfully created by the admin.</p>
     <span class="badge">&#x1F468;&#x200D;&#x2695;&#xFE0F; Doctor Account &middot; {specialty or 'General Medicine'}</span>
   </div>
@@ -134,7 +134,7 @@ def _build_doctor_welcome_html(
     <div class="greeting">Hello, Dr. {doctor_name} &#x1F44B;</div>
     <p class="intro">
       <strong>{admin_name}</strong> has created your login account on the
-      <strong>Integrated Patient Care Management System (IPCMS)</strong>.
+      <strong>Patient Care Management System for Healthcare Services (PCMHS)</strong>.
       Below are your login credentials and profile details. Please keep this email safe
       and change your password after your first login.
     </p>
@@ -182,7 +182,7 @@ def _build_doctor_welcome_html(
       </div>
       {bio_html}
     </div>
-    <a href="{login_url}" class="cta-btn">&#x1F510; Login to IPCMS Portal &rarr;</a>
+    <a href="{login_url}" class="cta-btn">&#x1F510; Login to PCMHS Portal &rarr;</a>
     <div class="warning-box">
       <p>
         &#x26A0;&#xFE0F; <strong>Important Security Notice:</strong><br/>
@@ -217,11 +217,11 @@ def _build_doctor_welcome_html(
     </p>
   </div>
   <div class="footer">
-    <div class="logo-text">&#x1F3E5; IPCMS</div>
+    <div class="logo-text">&#x1F3E5; PCMHS</div>
     <p>
-      <strong>Integrated Patient Care Management System</strong><br/>
+      <strong>Patient Care Management System for Healthcare Services</strong><br/>
       This email was sent automatically on behalf of <strong>{admin_name}</strong>.<br/>
-      &copy; {year} IPCMS. All rights reserved. &middot; Do not reply to this email.
+      &copy; {year} PCMHS. All rights reserved. &middot; Do not reply to this email.
     </p>
   </div>
 </div>
@@ -257,7 +257,7 @@ def send_doctor_credentials_email(
 
     # Build MIME message with RFC compliant headers
     msg = MIMEMultipart("alternative")
-    subject_str = f"Your Doctor Account Credentials - IPCMS | Dr. {doctor_name}"
+    subject_str = f"Your Doctor Account Credentials - PCMHS | Dr. {doctor_name}"
     msg["Subject"] = Header(subject_str, "utf-8")
     msg["From"] = f"{cfg['from_name']} <{cfg['user']}>"
     msg["To"] = doctor_email
@@ -268,7 +268,7 @@ def send_doctor_credentials_email(
 
     # Plain-text fallback
     plain_text = (
-        f"Welcome to IPCMS, Dr. {doctor_name}!\n\n"
+        f"Welcome to PCMHS, Dr. {doctor_name}!\n\n"
         f"Your doctor account has been created by {admin_name}.\n\n"
         f"LOGIN CREDENTIALS\n"
         f"-----------------\n"
@@ -283,7 +283,7 @@ def send_doctor_credentials_email(
         f"Fee:        Rs.{fee:.0f}\n\n"
         f"IMPORTANT: Please change your password immediately after your first login.\n\n"
         f"If you have any questions, contact the system admin.\n\n"
-        f"-- IPCMS Team"
+        f"-- PCMHS Team"
     )
 
     html_body = _build_doctor_welcome_html(

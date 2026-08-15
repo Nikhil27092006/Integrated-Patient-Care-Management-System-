@@ -85,7 +85,7 @@ def generate_prescription_pdf(prescriptions, patient_name, output_path="prescrip
     # Clinic name
     c.setFillColor(colors.white)
     c.setFont("Helvetica-Bold", 28)
-    c.drawCentredString(width/2, height - 45, "🏥 INTEGRATED PATIENT CARE")
+    c.drawCentredString(width/2, height - 45, "🏥 PATIENT CARE MANAGEMENT SYSTEM FOR HEALTHCARE SERVICES")
 
     c.setFont("Helvetica", 14)
     c.drawCentredString(width/2, height - 70, "Medical Center & Pharmacy")
@@ -238,7 +238,7 @@ def generate_prescription_pdf(prescriptions, patient_name, output_path="prescrip
     c.setFillColor(colors.HexColor("#64748b"))
     c.setFont("Helvetica", 8)
 
-    c.drawCentredString(width/2, y + 25, "Integrated Patient Care Management System")
+    c.drawCentredString(width/2, y + 25, "Patient Care Management System for Healthcare Services")
     c.drawCentredString(width/2, y + 15, "📍 Medical Center | 📞 Emergency: +91-XXX-XXX-XXXX | 📧 care@integratedpatientcare.com")
 
     c.setFont("Helvetica-Oblique", 7)
@@ -427,8 +427,8 @@ def _ai_chat(messages: list, patient_id=None) -> str:
         from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
         lc_msgs = [
             SystemMessage(content=(
-                "You are SmartCare AI, a helpful medical assistant integrated into IPCMS "
-                "(Integrated Patient Care Management System). You help patients understand "
+                "You are SmartCare AI, a helpful medical assistant integrated into PCMHS "
+                "(Patient Care Management System for Healthcare Services). You help patients understand "
                 "general health topics, explain medical terms, and guide them on using the platform. "
                 "Always remind users you are NOT a doctor and cannot diagnose or prescribe. "
                 "For emergencies, always direct them to call emergency services. "

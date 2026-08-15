@@ -1,5 +1,5 @@
 """
-Generate IPCMS Project Presentation (PowerPoint)
+Generate PCMHS Project Presentation (PowerPoint)
 A comprehensive, human-curated PPT covering definition, working, components,
 AI implementations, difficulties, features, frontend/backend and tech stack.
 
@@ -135,7 +135,7 @@ def page_bg(slide):
 def add_footer(slide, page, total):
     add_rect(slide, 0, Inches(7.18), SW, Inches(0.32), LIGHT_BG)
     add_text(slide, Inches(0.4), Inches(7.22), Inches(9), Inches(0.25),
-             "IPCMS — Integrated Patient Care Management System",
+             "PCMHS — Patient Care Management System for Healthcare Services",
              size=9, color=MUTED_TEXT, italic=True)
     add_text(slide, Inches(11.6), Inches(7.22), Inches(1.4), Inches(0.25),
              f"{page} / {total}", size=9, color=MUTED_TEXT,
@@ -203,7 +203,7 @@ def slide_1():
 
     # tagline
     add_text(s, Inches(0.6), Inches(3.7), Inches(5), Inches(0.4),
-             "IPCMS · Where AI meets everyday clinical care",
+             "PCMHS · Where AI meets everyday clinical care",
              size=12, italic=True, color=ACCENT_SOFT)
 
     # 3 KPI tiles — compact, fit between tagline and footer
@@ -304,7 +304,7 @@ def slide_1():
 def slide_2():
     s = prs.slides.add_slide(BLANK)
     page_bg(s)
-    add_title(s, "Section 01", "What is IPCMS?",
+    add_title(s, "Section 01", "What is PCMHS?",
              "A working definition, the way I'd explain it to a friend.")
 
     # left definition card
@@ -315,7 +315,7 @@ def slide_2():
     add_text(s, Inches(0.95), Inches(2.15), Inches(5.4), Inches(0.4),
              "IN ONE SENTENCE", size=11, bold=True, color=ACCENT)
     add_text(s, Inches(0.95), Inches(2.55), Inches(5.4), Inches(2.0),
-             "IPCMS is a web-based hospital workflow app that lets "
+             "PCMHS is a web-based hospital workflow app that lets "
              "patients, doctors and admins work off the same data — "
              "with an AI layer that helps everyone make better, "
              "faster decisions.",
@@ -1046,7 +1046,7 @@ def slide_14():
     add_text(s, Inches(0.7), Inches(0.7), Inches(11), Inches(0.4),
              "THANK YOU", size=14, bold=True, color=ACCENT)
     add_text(s, Inches(0.7), Inches(1.05), Inches(11), Inches(1.2),
-             "That's IPCMS.", size=44, bold=True, color=WHITE)
+             "That's PCMHS.", size=44, bold=True, color=WHITE)
     add_text(s, Inches(0.7), Inches(2.2), Inches(10), Inches(0.9),
              "A patient-care app that doesn't pretend AI is magic — "
              "it just moves the right information to the right person, faster.",
@@ -1099,7 +1099,7 @@ for i, fn in enumerate(slides, 1):
     add_footer(prs.slides[-1], i, total)
 
 out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                        "IPCMS_Project_Presentation.pptx")
+                        "PCMHS_Project_Presentation.pptx")
 prs.save(out_path)
 print(f"[OK] Saved: {out_path}")
 print(f"     Slides: {total}")

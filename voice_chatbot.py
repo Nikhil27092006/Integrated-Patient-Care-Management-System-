@@ -1,5 +1,5 @@
 """
-IPCMS Voice Chatbot — Floating Widget
+PCMHS Voice Chatbot — Floating Widget
 ──────────────────────────────────────────────────────────────────────────────
 A fully voice-enabled floating AI assistant powered by Google Gemini.
 - Floating button fixed to bottom-right on every page
@@ -32,7 +32,7 @@ def _build_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
   body {{ font-family: 'Inter', 'Segoe UI', sans-serif; overflow: hidden; background: transparent; }}
 
   /* ── Floating toggle button ─────────────────────────── */
-  #ipcms-fab {{
+  #pcmhs-fab {{
     position: fixed;
     bottom: 28px;
     right: 28px;
@@ -51,20 +51,20 @@ def _build_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
                 box-shadow 0.3s ease;
     animation: fabPulse 3s ease-in-out infinite;
   }}
-  #ipcms-fab:hover {{
+  #pcmhs-fab:hover {{
     transform: scale(1.12);
     box-shadow: 0 10px 40px rgba(14,165,233,0.65), 0 4px 16px rgba(0,0,0,0.22);
   }}
-  #ipcms-fab:active {{ transform: scale(0.96); }}
+  #pcmhs-fab:active {{ transform: scale(0.96); }}
 
   @keyframes fabPulse {{
     0%, 100% {{ box-shadow: 0 6px 28px rgba(14,165,233,0.55), 0 0 0 0 rgba(14,165,233,0.35); }}
     50% {{ box-shadow: 0 6px 28px rgba(14,165,233,0.55), 0 0 0 12px rgba(14,165,233,0); }}
   }}
-  #ipcms-fab svg {{ width: 28px; height: 28px; fill: white; transition: transform 0.3s ease; }}
+  #pcmhs-fab svg {{ width: 28px; height: 28px; fill: white; transition: transform 0.3s ease; }}
 
   /* ── Chat Panel ─────────────────────────────────────── */
-  #ipcms-panel {{
+  #pcmhs-panel {{
     position: fixed;
     bottom: 104px;
     right: 28px;
@@ -85,14 +85,14 @@ def _build_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
     pointer-events: none;
     transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
   }}
-  #ipcms-panel.open {{
+  #pcmhs-panel.open {{
     transform: scale(1) translateY(0);
     opacity: 1;
     pointer-events: all;
   }}
 
   /* ── Panel Header ───────────────────────────────────── */
-  #ipcms-header {{
+  #pcmhs-header {{
     background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 55%, #14b8a6 100%);
     padding: 16px 20px;
     display: flex;
@@ -163,7 +163,7 @@ def _build_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
   }}
 
   /* ── Messages ───────────────────────────────────────── */
-  #ipcms-messages {{
+  #pcmhs-messages {{
     flex: 1;
     overflow-y: auto;
     padding: 16px;
@@ -172,8 +172,8 @@ def _build_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
     gap: 12px;
     scroll-behavior: smooth;
   }}
-  #ipcms-messages::-webkit-scrollbar {{ width: 4px; }}
-  #ipcms-messages::-webkit-scrollbar-thumb {{ background: #cbd5e1; border-radius: 4px; }}
+  #pcmhs-messages::-webkit-scrollbar {{ width: 4px; }}
+  #pcmhs-messages::-webkit-scrollbar-thumb {{ background: #cbd5e1; border-radius: 4px; }}
 
   .msg-row {{
     display: flex;
@@ -275,7 +275,7 @@ def _build_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
   }}
 
   /* ── Input area ─────────────────────────────────────── */
-  #ipcms-input-area {{
+  #pcmhs-input-area {{
     border-top: 1px solid #e2e8f0;
     padding: 12px 14px;
     background: #f8fafc;
@@ -389,7 +389,7 @@ def _build_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
   }}
 
   /* ── Notification badge ─────────────────────────────── */
-  #ipcms-badge {{
+  #pcmhs-badge {{
     position: absolute;
     top: -2px; right: -2px;
     background: #ef4444;
@@ -410,22 +410,22 @@ def _build_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
 
 <!-- Floating Action Button -->
 <div style="position:fixed;bottom:28px;right:28px;z-index:2147483647;">
-  <button id="ipcms-fab" onclick="togglePanel()" title="IPCMS Voice Assistant">
+  <button id="pcmhs-fab" onclick="togglePanel()" title="PCMHS Voice Assistant">
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1 1.93c-3.94-.49-7-3.85-7-7.93h2c0 3.31 2.69 6 6 6s6-2.69 6-6h2c0 4.08-3.06 7.44-7 7.93V21h-2v-5.07z" id="fab-icon-path"/>
     </svg>
-    <div id="ipcms-badge">1</div>
+    <div id="pcmhs-badge">1</div>
   </button>
 </div>
 
 <!-- Chat Panel -->
-<div id="ipcms-panel">
+<div id="pcmhs-panel">
 
   <!-- Header -->
-  <div id="ipcms-header">
+  <div id="pcmhs-header">
     <div class="hdr-avatar">🏥</div>
     <div class="hdr-info">
-      <div class="hdr-name">IPCMS Health Assistant</div>
+      <div class="hdr-name">PCMHS Health Assistant</div>
       <div class="hdr-status">
         <div class="status-dot"></div>
         <span>AI Voice Ready · Online</span>
@@ -442,16 +442,16 @@ def _build_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
   </div>
 
   <!-- Messages -->
-  <div id="ipcms-messages">
+  <div id="pcmhs-messages">
     <div class="msg-row">
       <div class="msg-avatar ai-av">🤖</div>
       <div>
         <div class="bubble ai">
-          👋 Hello! I'm your IPCMS Voice AI Assistant.<br><br>
+          👋 Hello! I'm your PCMHS Voice AI Assistant.<br><br>
           🎤 Press the mic button to speak, or type your question in text.<br>
           I will answer and read responses aloud to you!
         </div>
-        <div class="bubble-meta ai">Now · IPCMS AI</div>
+        <div class="bubble-meta ai">Now · PCMHS AI</div>
       </div>
     </div>
     <div id="typing-indicator">
@@ -462,7 +462,7 @@ def _build_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
   </div>
 
   <!-- Input Area -->
-  <div id="ipcms-input-area">
+  <div id="pcmhs-input-area">
 
     <!-- Quick Prompts -->
     <div id="quick-prompts">
@@ -499,7 +499,7 @@ def _build_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
 const GEMINI_API_KEY = "{gemini_api_key}";
 const GROQ_API_KEY   = "{groq_api_key}";
 
-const SYSTEM_PROMPT = `You are IPCMS Health Assistant, an AI medical assistant for the Integrated Patient Care Management System.
+const SYSTEM_PROMPT = `You are PCMHS Health Assistant, an AI medical assistant for the Patient Care Management System for Healthcare Services.
 You help patients and healthcare professionals with medical questions, appointment guidance, medicine information, and health tips.
 Keep responses concise, warm, empathetic, and clear (max 75-90 words) — optimized for voice output.
 Never provide a definitive medical diagnosis. Always suggest consulting a physician for severe symptoms.`;
@@ -511,7 +511,7 @@ function getLocalMedicalKnowledge(query) {{
     return "Common diabetes symptoms include increased thirst, frequent urination, fatigue, and blurred vision. Maintain a balanced low-sugar diet, exercise daily, and monitor your blood glucose level regularly.";
   }}
   if (q.includes('appointment') || q.includes('book') || q.includes('doctor') || q.includes('schedule')) {{
-    return "To book an appointment in IPCMS: sign in to your Patient Portal, click 'Appointments' in the sidebar menu, choose a doctor and available date/time slot, then click 'Confirm Booking'.";
+    return "To book an appointment in PCMHS: sign in to your Patient Portal, click 'Appointments' in the sidebar menu, choose a doctor and available date/time slot, then click 'Confirm Booking'.";
   }}
   if (q.includes('bp') || q.includes('blood pressure') || q.includes('hypertension')) {{
     return "Normal blood pressure is under 120/80 mmHg. Reduce sodium intake, manage stress, stay physically active, and consult your doctor for proper anti-hypertensive medication.";
@@ -520,12 +520,12 @@ function getLocalMedicalKnowledge(query) {{
     return "For heart health: consume omega-3 rich foods, exercise at least 30 minutes daily, and avoid smoking. If you experience severe chest pressure or shortness of breath, seek emergency medical care immediately.";
   }}
   if (q.includes('medicine') || q.includes('prescription') || q.includes('drug')) {{
-    return "You can check your active prescriptions and medicine schedules under 'Prescriptions' in the IPCMS Patient Portal. Always consult your doctor before modifying medication dosages.";
+    return "You can check your active prescriptions and medicine schedules under 'Prescriptions' in the PCMHS Patient Portal. Always consult your doctor before modifying medication dosages.";
   }}
   if (q.includes('flu') || q.includes('fever') || q.includes('cough') || q.includes('cold')) {{
     return "For mild flu or fever: rest well, drink plenty of water, and monitor your temperature. If fever exceeds 102°F (38.9°C) or lasts over 3 days, consult a physician promptly.";
   }}
-  return "Thank you for asking IPCMS Health Assistant. I am here to help with symptom information, appointment booking, prescription details, and general wellness. Please consult a qualified doctor for medical diagnoses.";
+  return "Thank you for asking PCMHS Health Assistant. I am here to help with symptom information, appointment booking, prescription details, and general wellness. Please consult a qualified doctor for medical diagnoses.";
 }}
 
 // ── State ────────────────────────────────────────────────────────────────────
@@ -542,8 +542,8 @@ let accumulatedText = '';
 // ── Panel toggle ─────────────────────────────────────────────────────────────
 function togglePanel() {{
   panelOpen = !panelOpen;
-  const panel = document.getElementById('ipcms-panel');
-  const badge = document.getElementById('ipcms-badge');
+  const panel = document.getElementById('pcmhs-panel');
+  const badge = document.getElementById('pcmhs-badge');
   const fabPath = document.getElementById('fab-icon-path');
   if (panelOpen) {{
     panel.classList.add('open');
@@ -572,13 +572,13 @@ function setMode(mode) {{
 
 // ── Scroll to bottom ─────────────────────────────────────────────────────────
 function scrollBottom() {{
-  const msgs = document.getElementById('ipcms-messages');
+  const msgs = document.getElementById('pcmhs-messages');
   msgs.scrollTop = msgs.scrollHeight;
 }}
 
 // ── Add message ──────────────────────────────────────────────────────────────
 function addMessage(text, role, extraHTML = '') {{
-  const msgs  = document.getElementById('ipcms-messages');
+  const msgs  = document.getElementById('pcmhs-messages');
   const typing = document.getElementById('typing-indicator');
   const time   = new Date().toLocaleTimeString([], {{hour:'2-digit', minute:'2-digit'}});
 
@@ -586,7 +586,7 @@ function addMessage(text, role, extraHTML = '') {{
   row.className = `msg-row ${{role === 'user' ? 'user' : ''}}`;
 
   const avatarDiv = `<div class="msg-avatar ${{role === 'user' ? 'user-av' : 'ai-av'}}">${{role === 'user' ? '👤' : '🤖'}}</div>`;
-  const metaDiv   = `<div class="bubble-meta ${{role === 'user' ? 'user' : ''}}">${{time}} · ${{role === 'user' ? 'You' : 'IPCMS AI'}} ${{extraHTML}}</div>`;
+  const metaDiv   = `<div class="bubble-meta ${{role === 'user' ? 'user' : ''}}">${{time}} · ${{role === 'user' ? 'You' : 'PCMHS AI'}} ${{extraHTML}}</div>`;
   const bubbleDiv = `<div class="bubble ${{role === 'user' ? 'user' : 'ai'}}">${{text}}</div>`;
 
   row.innerHTML = role === 'user'
@@ -877,7 +877,7 @@ function stopRecording() {{
 // ── Clear chat ────────────────────────────────────────────────────────────────
 function clearChat() {{
   chatHistory = [];
-  const msgs = document.getElementById('ipcms-messages');
+  const msgs = document.getElementById('pcmhs-messages');
   const typing = document.getElementById('typing-indicator');
   while (msgs.firstChild && msgs.firstChild !== typing) {{
     msgs.removeChild(msgs.firstChild);
@@ -890,7 +890,7 @@ function clearChat() {{
 if (window.speechSynthesis) {{ window.speechSynthesis.getVoices(); }}
 setTimeout(() => {{
   if (window.speechSynthesis) {{ window.speechSynthesis.getVoices(); }}
-  const badge = document.getElementById('ipcms-badge');
+  const badge = document.getElementById('pcmhs-badge');
   if (badge) {{ badge.style.display = 'flex'; badge.textContent = '1'; }}
 }}, 2000);
 </script>
@@ -938,13 +938,13 @@ def inject_voice_chatbot():
 <script>
 (function() {
     var parentDoc = window.parent.document;
-    if (parentDoc.getElementById('ipcms-fab')) return;
+    if (parentDoc.getElementById('pcmhs-fab')) return;
     var styleEl = parentDoc.createElement('style');
-    styleEl.id = 'ipcms-chatbot-styles';
+    styleEl.id = 'pcmhs-chatbot-styles';
     styleEl.textContent = """ + css_json + """;
     parentDoc.head.appendChild(styleEl);
     var container = parentDoc.createElement('div');
-    container.id = 'ipcms-chatbot-root';
+    container.id = 'pcmhs-chatbot-root';
     container.innerHTML = """ + body_json + """;
     parentDoc.body.appendChild(container);
     var scriptEl = parentDoc.createElement('script');
@@ -1177,7 +1177,7 @@ def _build_inline_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
     <div class="hdr-left">
       <div class="hdr-icon">🎙️</div>
       <div>
-        <div class="hdr-title">IPCMS Voice Assistant</div>
+        <div class="hdr-title">PCMHS Voice Assistant</div>
         <div class="hdr-sub">
           <span class="online-dot"></span>
           <span>Interactive AI Voice Console · 100% Voice Response Output</span>
@@ -1205,7 +1205,7 @@ def _build_inline_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
       <div class="avatar ai">🤖</div>
       <div>
         <div class="bubble ai">
-          👋 Welcome to the <b>IPCMS Voice AI Assistant</b>!<br>
+          👋 Welcome to the <b>PCMHS Voice AI Assistant</b>!<br>
           Press the <b>🎤 Mic Button</b> below to ask any medical, appointment, or health question.<br>
           I will answer and read the full response to you in <b>voice audio format</b>!
         </div>
@@ -1235,7 +1235,7 @@ def _build_inline_chatbot_html(gemini_api_key: str, groq_api_key: str) -> str:
 const GEMINI_KEY = "{gemini_api_key}";
 const GROQ_KEY   = "{groq_api_key}";
 
-const SYSTEM_PROMPT_VOICE = `You are IPCMS Voice AI Assistant.
+const SYSTEM_PROMPT_VOICE = `You are PCMHS Voice AI Assistant.
 Your output will be read ALOUD to the user as voice audio.
 Keep responses clear, empathetic, direct, and concise (max 75-90 words).
 Never use markdown asterisks or complex code blocks.
@@ -1247,7 +1247,7 @@ function getInlineLocalFallback(query) {{
     return "Common flu symptoms include fever, body aches, fatigue, and cough. Stay well hydrated, rest, and consult a doctor if your fever exceeds 102°F or lasts longer than 3 days.";
   }}
   if (q.includes('book') || q.includes('appointment') || q.includes('doctor') || q.includes('schedule')) {{
-    return "To book an appointment in IPCMS: sign in to your Patient Portal, click 'Appointments' in the sidebar menu, choose your preferred doctor, select an available date and time, and click 'Confirm Booking'.";
+    return "To book an appointment in PCMHS: sign in to your Patient Portal, click 'Appointments' in the sidebar menu, choose your preferred doctor, select an available date and time, and click 'Confirm Booking'.";
   }}
   if (q.includes('bp') || q.includes('blood pressure') || q.includes('hypertension')) {{
     return "Normal blood pressure is generally under 120/80 mmHg. Avoid high sodium foods, exercise regularly, and consult your doctor for proper medical evaluation.";
@@ -1256,9 +1256,9 @@ function getInlineLocalFallback(query) {{
     return "Diabetes symptoms include frequent urination, increased thirst, and fatigue. Maintain a low-sugar diet, stay active, and monitor blood glucose levels regularly.";
   }}
   if (q.includes('medicine') || q.includes('prescription')) {{
-    return "You can check active prescriptions and medicine schedules under 'Prescriptions' in your IPCMS Patient Dashboard. Always check with your doctor before altering medications.";
+    return "You can check active prescriptions and medicine schedules under 'Prescriptions' in your PCMHS Patient Dashboard. Always check with your doctor before altering medications.";
   }}
-  return "Hello! I am your IPCMS Voice Assistant. I can help answer health questions, guide you through appointment booking, and explain prescriptions. Please consult a physician for individual medical advice.";
+  return "Hello! I am your PCMHS Voice Assistant. I can help answer health questions, guide you through appointment booking, and explain prescriptions. Please consult a physician for individual medical advice.";
 }}
 
 let history = [];
@@ -1517,7 +1517,7 @@ function clearInlineChat() {{
   history = [];
   const el = document.getElementById('inline-messages');
   if (el) el.innerHTML = '';
-  addInlineMsg('Chat cleared. Click the mic to speak to IPCMS Voice Assistant.', 'ai');
+  addInlineMsg('Chat cleared. Click the mic to speak to PCMHS Voice Assistant.', 'ai');
 }}
 
 if (window.speechSynthesis) {{ window.speechSynthesis.getVoices(); }}

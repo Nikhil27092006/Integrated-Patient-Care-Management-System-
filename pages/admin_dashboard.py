@@ -121,7 +121,7 @@ def render():
     if page == "console":
         medical_banner("Admin")
 
-        page_header("Admin Console", "Full oversight of IPCMS")
+        page_header("Admin Console", "Full oversight of PCMHS")
 
         counts       = db.fetch_user_counts()
         all_appts    = db.fetch_appointments()
